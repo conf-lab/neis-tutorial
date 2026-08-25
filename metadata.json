@@ -1,0 +1,6 @@
+{
+  "name": "나이스(NEIS) 교무업무 가상 실습 플랫폼 & 튜토리얼 AI 튜터",
+  "description": "2026학년도 초등학교 4세대 나이스(NEIS) 교무업무 매뉴얼 기반 실시간 가상 시뮬레이터 및 단계별 인터랙티브 튜토리얼 AI 챗봇 학습 플랫폼",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
