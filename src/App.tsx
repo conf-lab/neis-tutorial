@@ -26,6 +26,13 @@ import { TutorialModeBanner } from "./components/TutorialModeBanner";
 import { ChatWindow } from "./components/ChatWindow";
 import { AuditTipsModal } from "./components/AuditTipsModal";
 import { ApprovalBoxModal } from "./components/ApprovalBoxModal";
+import { ApiKeyModal } from "./components/ApiKeyModal";
+import { TutorialGuideModal } from "./components/TutorialGuideModal";
+
+const API_KEY_STORAGE = "neis_gemini_api_key";
+const API_KEY_DISMISSED_STORAGE = "neis_api_key_modal_dismissed";
+const GUIDE_SNOOZE_UNTIL_STORAGE = "neis_guide_modal_snooze_until";
+const GUIDE_SNOOZE_DAYS = 7;
 
 // Views
 import { TransferInView } from "./components/views/TransferInView";
@@ -75,6 +82,73 @@ export function App() {
   const [isTutorialActive, setIsTutorialActive] = useState<boolean>(true);
   const [currentScenario, setCurrentScenario] = useState<TutorialScenario>(TUTORIAL_SCENARIOS[0]);
   const [tutorialStepIndex, setTutorialStepIndex] = useState<number>(0);
+
+  // Gemini API Key (bring-your-own-key, stored only in this browser)
+  const [geminiApiKey, setGeminiApiKey] = useState<string>(
+    () => localStorage.getItem(API_KEY_STORAGE) || ""
+  );
+  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState<boolean>(false);
+
+  // Usage guide modal (shown when the tutorial is opened, unless snoozed for a week)
+  const [isGuideModalOpen, setIsGuideModalOpen] = useState<boolean>(false);
+
+  const isGuideSnoozed = () => {
+    const until = Number(localStorage.getItem(GUIDE_SNOOZE_UNTIL_STORAGE) || 0);
+    return Date.now() < until;
+  };
+
+  const maybeShowApiKeyModal = () => {
+    if (!geminiApiKey && !localStorage.getItem(API_KEY_DISMISSED_STORAGE)) {
+      setIsApiKeyModalOpen(true);
+    }
+  };
+
+  const openTutorialMode = () => {
+    setIsTutorialActive(true);
+    if (!isGuideSnoozed()) {
+      setIsGuideModalOpen(true);
+    } else {
+      maybeShowApiKeyModal();
+    }
+  };
+
+  // Show the usage guide (or API key prompt) the first time the tutorial mode appears
+  React.useEffect(() => {
+    if (isTutorialActive) {
+      if (!isGuideSnoozed()) {
+        setIsGuideModalOpen(true);
+      } else {
+        maybeShowApiKeyModal();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleCloseGuideModal = () => {
+    setIsGuideModalOpen(false);
+    maybeShowApiKeyModal();
+  };
+
+  const handleSnoozeGuideModal = () => {
+    localStorage.setItem(
+      GUIDE_SNOOZE_UNTIL_STORAGE,
+      String(Date.now() + GUIDE_SNOOZE_DAYS * 24 * 60 * 60 * 1000)
+    );
+    setIsGuideModalOpen(false);
+    maybeShowApiKeyModal();
+  };
+
+  const handleSaveApiKey = (key: string) => {
+    localStorage.setItem(API_KEY_STORAGE, key);
+    localStorage.removeItem(API_KEY_DISMISSED_STORAGE);
+    setGeminiApiKey(key);
+    setIsApiKeyModalOpen(false);
+  };
+
+  const handleSkipApiKey = () => {
+    localStorage.setItem(API_KEY_DISMISSED_STORAGE, "1");
+    setIsApiKeyModalOpen(false);
+  };
 
   // Synchronize StepBoxes when SubMenu changes
   const handleSelectSubMenu = (item: SubMenuItem) => {
@@ -214,6 +288,8 @@ export function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: text,
+          apiKey: geminiApiKey,
+          currentMenu: currentSubMenu.name,
           context: {
             currentMenu: currentSubMenu.name,
             currentDomain: MENU_STRUCTURE[currentMainMenu].title,
@@ -225,15 +301,20 @@ export function App() {
         })
       });
 
-      if (!res.ok) {
+      const data = await res.json();
+
+      if (!res.ok && !data.reply) {
         throw new Error("서버 응답 오류가 발생했습니다.");
       }
 
-      const data = await res.json();
+      if (data.requiresApiKey) {
+        setIsApiKeyModalOpen(true);
+      }
+
       const botMsg: ChatMessage = {
         id: `a-${Date.now()}`,
         sender: "bot",
-        text: data.reply || "죄송합니다. 답변을 생성하지 못했습니다.",
+        text: data.reply || data.error || "죄송합니다. 답변을 생성하지 못했습니다.",
         timestamp: new Date().toISOString(),
         manualPage: data.manualPage
       };
@@ -318,12 +399,14 @@ export function App() {
         currentMainMenu={currentMainMenu}
         onSelectMainMenu={handleSelectMainMenu}
         activeTutorial={isTutorialActive ? currentScenario : null}
-        onOpenTutorialList={() => setIsTutorialActive(true)}
+        onOpenTutorialList={openTutorialMode}
         onOpenAuditTips={() => setIsAuditModalOpen(true)}
         onOpenApprovalList={() => setIsApprovalModalOpen(true)}
         approvalCount={approvalDocs.filter((d) => d.status === "결재중" || d.status === "결재대기").length}
         isChatOpen={isChatOpen}
         onToggleChat={() => setIsChatOpen(!isChatOpen)}
+        hasApiKey={!!geminiApiKey}
+        onOpenApiKeySettings={() => setIsApiKeyModalOpen(true)}
       />
 
       {/* Interactive Tutorial Banner (if active) */}
@@ -594,6 +677,22 @@ export function App() {
         onClose={() => setIsApprovalModalOpen(false)}
         documents={approvalDocs}
         onApproveDocument={handleApproveDocument}
+      />
+
+      {/* Gemini API Key Modal (본인 API 키 입력, 브라우저에만 저장) */}
+      <ApiKeyModal
+        isOpen={isApiKeyModalOpen}
+        currentKey={geminiApiKey}
+        onSave={handleSaveApiKey}
+        onSkip={handleSkipApiKey}
+        onClose={() => setIsApiKeyModalOpen(false)}
+      />
+
+      {/* Tutorial Usage Guide Modal (튜토리얼 열 때 안내, 일주일간 숨기기 가능) */}
+      <TutorialGuideModal
+        isOpen={isGuideModalOpen}
+        onClose={handleCloseGuideModal}
+        onSnoozeWeek={handleSnoozeGuideModal}
       />
     </div>
   );

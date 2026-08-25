@@ -1,14 +1,15 @@
 import React from "react";
-import { 
-  Building2, 
-  HelpCircle, 
-  BookMarked, 
-  PlayCircle, 
-  Sparkles, 
-  CheckCircle2, 
+import {
+  Building2,
+  HelpCircle,
+  BookMarked,
+  PlayCircle,
+  Sparkles,
+  CheckCircle2,
   FileCheck2,
   Calendar,
-  AlertTriangle
+  AlertTriangle,
+  KeyRound
 } from "lucide-react";
 import { MainMenuId } from "../types";
 import { MENU_STRUCTURE } from "../data/manualData";
@@ -23,6 +24,8 @@ interface HeaderNavProps {
   approvalCount: number;
   isChatOpen: boolean;
   onToggleChat: () => void;
+  hasApiKey: boolean;
+  onOpenApiKeySettings: () => void;
 }
 
 export const HeaderNav: React.FC<HeaderNavProps> = ({
@@ -35,6 +38,8 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   approvalCount,
   isChatOpen,
   onToggleChat,
+  hasApiKey,
+  onOpenApiKeySettings,
 }) => {
   return (
     <header className="bg-slate-900 text-white select-none border-b border-slate-700 shadow-md">
@@ -100,6 +105,18 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>AI 가이드 챗봇 {isChatOpen ? "열림" : "질문하기"}</span>
+          </button>
+
+          <button
+            onClick={onOpenApiKeySettings}
+            title={hasApiKey ? "Gemini API 키 등록됨 (변경하기)" : "Gemini API 키 입력 (챗봇 사용에 필요)"}
+            className={`flex items-center gap-1 px-2 py-1 rounded border transition-colors ${
+              hasApiKey
+                ? "bg-emerald-950/60 border-emerald-700/60 text-emerald-300 hover:bg-emerald-900/60"
+                : "bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <KeyRound className="w-3.5 h-3.5" />
           </button>
 
           <div className="flex items-center gap-2 pl-2 border-l border-slate-800 text-slate-400">

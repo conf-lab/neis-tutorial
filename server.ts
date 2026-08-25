@@ -11,20 +11,18 @@ const PORT = 3000;
 
 app.use(express.json());
 
-// Initialize Gemini client (server-side only)
-let aiClient: GoogleGenAI | null = null;
-function getGeminiClient(): GoogleGenAI {
-  if (!aiClient) {
-    aiClient = new GoogleGenAI({
-      apiKey: process.env.GEMINI_API_KEY || "",
-      httpOptions: {
-        headers: {
-          "User-Agent": "aistudio-build",
-        },
+// Create a Gemini client scoped to the caller's own API key (falls back to a
+// server-configured key if the deployer set one). Never cached across requests
+// since different visitors may bring different keys.
+function getGeminiClient(apiKey: string): GoogleGenAI {
+  return new GoogleGenAI({
+    apiKey,
+    httpOptions: {
+      headers: {
+        "User-Agent": "aistudio-build",
       },
-    });
-  }
-  return aiClient;
+    },
+  });
 }
 
 const NEIS_MANUAL_SYSTEM_INSTRUCTION = `
@@ -65,13 +63,21 @@ const NEIS_MANUAL_SYSTEM_INSTRUCTION = `
 // AI Assistant Endpoint
 app.post("/api/chat", async (req, res) => {
   try {
-    const { message, history = [], currentMenu = "" } = req.body;
+    const { message, history = [], currentMenu = "", apiKey } = req.body;
 
     if (!message || typeof message !== "string") {
       return res.status(400).json({ error: "메시지를 입력해주세요." });
     }
 
-    const ai = getGeminiClient();
+    const effectiveKey = (typeof apiKey === "string" && apiKey.trim()) || process.env.GEMINI_API_KEY || "";
+    if (!effectiveKey) {
+      return res.json({
+        reply: "AI 튜터 챗봇을 사용하려면 본인의 Gemini API 키가 필요합니다. 우측 상단의 [AI 가이드 챗봇] 옆 열쇠 아이콘을 눌러 키를 입력해주세요.",
+        requiresApiKey: true,
+      });
+    }
+
+    const ai = getGeminiClient(effectiveKey);
     const contents: any[] = [];
 
     // Add context about current active screen if available
@@ -109,9 +115,18 @@ app.post("/api/chat", async (req, res) => {
     res.json({ reply: text });
   } catch (error: any) {
     console.error("Gemini API Error:", error);
+    const status = error?.status;
+    const message = String(error?.message || "");
+    const invalidKey =
+      status === 401 ||
+      status === 403 ||
+      /API_KEY_INVALID|API key not valid|PERMISSION_DENIED/i.test(message);
     res.status(500).json({
-      error: "AI 응답을 생성하는 도중 오류가 발생했습니다.",
+      error: invalidKey
+        ? "입력하신 Gemini API 키가 유효하지 않습니다. 키를 다시 확인해주세요."
+        : "AI 응답을 생성하는 도중 오류가 발생했습니다.",
       details: error?.message || String(error),
+      requiresApiKey: invalidKey,
     });
   }
 });
