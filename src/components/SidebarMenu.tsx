@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Search, ChevronRight, BookOpen, KeyRound, Sparkles } from "lucide-react";
 import { MainMenuId, SubMenuItem } from "../types";
 import { MENU_STRUCTURE } from "../data/manualData";
+import { getManualPageUrl } from "../utils/manual";
 
 interface SidebarMenuProps {
   currentMainMenu: MainMenuId;
@@ -81,7 +82,14 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                   {item.category}
                 </span>
                 {item.manualPage && (
-                  <span className="text-slate-400 flex items-center gap-0.5">
+                  <span
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.open(getManualPageUrl(item.manualPage!), "_blank");
+                    }}
+                    title="매뉴얼 PDF 해당 쪽 열기"
+                    className="text-slate-400 hover:text-blue-600 hover:underline flex items-center gap-0.5"
+                  >
                     <BookOpen className="w-3 h-3 text-slate-400" />
                     {item.manualPage}p
                   </span>

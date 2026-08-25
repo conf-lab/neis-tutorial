@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ChatMessage, TutorialScenario } from "../types";
+import { getManualPageUrl } from "../utils/manual";
 import { 
   Bot, 
   Send, 
@@ -177,10 +178,16 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
               {/* Manual Page Citation Badge */}
               {msg.manualPage && (
-                <div className="mt-2 pt-2 border-t border-slate-100 flex items-center gap-1 text-[10px] text-blue-700 font-semibold">
+                <a
+                  href={getManualPageUrl(msg.manualPage)}
+                  target="_blank"
+                  rel="noreferrer"
+                  title="매뉴얼 PDF 해당 쪽 열기"
+                  className="mt-2 pt-2 border-t border-slate-100 flex items-center gap-1 text-[10px] text-blue-700 font-semibold hover:text-blue-900 hover:underline"
+                >
                   <BookOpen className="w-3 h-3 text-blue-600" />
                   <span>2026 초등 나이스 매뉴얼 p.{msg.manualPage} 근거</span>
-                </div>
+                </a>
               )}
             </div>
           </div>

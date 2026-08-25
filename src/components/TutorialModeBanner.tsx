@@ -1,5 +1,6 @@
 import React from "react";
 import { TutorialScenario } from "../types";
+import { getManualPageUrl } from "../utils/manual";
 import { 
   Sparkles, 
   ArrowRight, 
@@ -64,9 +65,15 @@ export const TutorialModeBanner: React.FC<TutorialModeBannerProps> = ({
                 단계 {currentStepIndex + 1}/{scenario.steps.length}: {currentStep.title}
               </span>
               {currentStep.manualPage && (
-                <span className="text-[10px] bg-blue-900/80 px-1.5 py-0.5 rounded text-blue-200 border border-blue-400/30">
+                <a
+                  href={getManualPageUrl(currentStep.manualPage)}
+                  target="_blank"
+                  rel="noreferrer"
+                  title="매뉴얼 PDF 해당 쪽 열기"
+                  className="text-[10px] bg-blue-900/80 hover:bg-blue-800 px-1.5 py-0.5 rounded text-blue-200 border border-blue-400/30 hover:underline"
+                >
                   매뉴얼 p.{currentStep.manualPage}
-                </span>
+                </a>
               )}
             </div>
             <p className="text-slate-100 font-medium leading-relaxed">

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { AuditCheckItem } from "../types";
+import { getManualPageUrl } from "../utils/manual";
 import { 
   ShieldAlert, 
   Search, 
@@ -101,7 +102,15 @@ export const AuditTipsModal: React.FC<AuditTipsModalProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-[11px] text-slate-500 font-medium">매뉴얼 p.{tip.manualPage}</span>
+                  <a
+                    href={getManualPageUrl(tip.manualPage)}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="매뉴얼 PDF 해당 쪽 열기"
+                    className="text-[11px] text-slate-500 hover:text-rose-700 font-medium hover:underline"
+                  >
+                    매뉴얼 p.{tip.manualPage}
+                  </a>
                   <button
                     onClick={() => {
                       onSelectAuditTipToChat(tip);

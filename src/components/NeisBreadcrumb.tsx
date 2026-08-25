@@ -2,6 +2,7 @@ import React from "react";
 import { ChevronRight, Printer, Star, RotateCcw, HelpCircle, BookOpen, Sparkles } from "lucide-react";
 import { MainMenuId, SubMenuItem } from "../types";
 import { MENU_STRUCTURE } from "../data/manualData";
+import { getManualPageUrl } from "../utils/manual";
 
 export interface NeisBreadcrumbProps {
   currentMainMenu?: MainMenuId;
@@ -47,10 +48,16 @@ export const NeisBreadcrumb: React.FC<NeisBreadcrumbProps> = ({
           {subMenuName}
         </span>
         {pageNumber && (
-          <span className="ml-2 inline-flex items-center gap-1 text-[11px] font-normal text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+          <a
+            href={getManualPageUrl(pageNumber)}
+            target="_blank"
+            rel="noreferrer"
+            title="매뉴얼 PDF 해당 쪽 열기"
+            className="ml-2 inline-flex items-center gap-1 text-[11px] font-normal text-amber-700 bg-amber-50 hover:bg-amber-100 px-2 py-0.5 rounded border border-amber-200 hover:underline"
+          >
             <BookOpen className="w-3 h-3 text-amber-600" />
             매뉴얼 {pageNumber}p
-          </span>
+          </a>
         )}
       </div>
 
