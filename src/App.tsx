@@ -28,6 +28,7 @@ import { AuditTipsModal } from "./components/AuditTipsModal";
 import { ApprovalBoxModal } from "./components/ApprovalBoxModal";
 import { ApiKeyModal } from "./components/ApiKeyModal";
 import { TutorialGuideModal } from "./components/TutorialGuideModal";
+import { DisclaimerModal } from "./components/DisclaimerModal";
 
 const API_KEY_STORAGE = "neis_gemini_api_key";
 const API_KEY_DISMISSED_STORAGE = "neis_api_key_modal_dismissed";
@@ -91,6 +92,9 @@ export function App() {
 
   // Usage guide modal (shown when the tutorial is opened, unless snoozed for a week)
   const [isGuideModalOpen, setIsGuideModalOpen] = useState<boolean>(false);
+
+  // Disclaimer modal (shown immediately on every visit)
+  const [isDisclaimerModalOpen, setIsDisclaimerModalOpen] = useState<boolean>(true);
 
   const isGuideSnoozed = () => {
     const until = Number(localStorage.getItem(GUIDE_SNOOZE_UNTIL_STORAGE) || 0);
@@ -693,6 +697,12 @@ export function App() {
         isOpen={isGuideModalOpen}
         onClose={handleCloseGuideModal}
         onSnoozeWeek={handleSnoozeGuideModal}
+      />
+
+      {/* Disclaimer Modal (접속 시 즉시 안내) */}
+      <DisclaimerModal
+        isOpen={isDisclaimerModalOpen}
+        onClose={() => setIsDisclaimerModalOpen(false)}
       />
     </div>
   );
