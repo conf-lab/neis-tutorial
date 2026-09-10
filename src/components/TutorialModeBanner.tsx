@@ -1,13 +1,12 @@
 import React from "react";
 import { TutorialScenario } from "../types";
 import { getManualPageUrl } from "../utils/manual";
-import { 
-  Sparkles, 
-  ArrowRight, 
-  CheckCircle2, 
-  RotateCcw, 
-  X, 
-  HelpCircle, 
+import {
+  Sparkles,
+  ArrowRight,
+  RotateCcw,
+  X,
+  HelpCircle,
   BookOpen,
   MousePointer
 } from "lucide-react";
@@ -20,6 +19,8 @@ interface TutorialModeBannerProps {
   onReset: () => void;
   onExit: () => void;
   onOpenChatWithStep: () => void;
+  manualPaneOpen?: boolean;
+  onToggleManualPane?: () => void;
 }
 
 export const TutorialModeBanner: React.FC<TutorialModeBannerProps> = ({
@@ -30,6 +31,8 @@ export const TutorialModeBanner: React.FC<TutorialModeBannerProps> = ({
   onReset,
   onExit,
   onOpenChatWithStep,
+  manualPaneOpen,
+  onToggleManualPane,
 }) => {
   const currentStep = scenario.steps[currentStepIndex];
   const isLastStep = currentStepIndex === scenario.steps.length - 1;
@@ -92,6 +95,21 @@ export const TutorialModeBanner: React.FC<TutorialModeBannerProps> = ({
 
         {/* Right: Controls & Navigation */}
         <div className="flex items-center gap-2 shrink-0">
+          {onToggleManualPane && (
+            <button
+              onClick={onToggleManualPane}
+              className={`hidden lg:flex items-center gap-1 px-2 py-1.5 rounded text-xs font-semibold border transition-colors ${
+                manualPaneOpen
+                  ? "bg-amber-400 text-slate-900 border-amber-300"
+                  : "bg-white/10 hover:bg-white/20 text-slate-200 border-white/10"
+              }`}
+              title="옆에 매뉴얼 원본 페이지 보기/숨기기"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>매뉴얼 {manualPaneOpen ? "숨기기" : "보기"}</span>
+            </button>
+          )}
+
           <button
             onClick={onReset}
             className="p-1.5 bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white rounded border border-white/10"

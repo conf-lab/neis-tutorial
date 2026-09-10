@@ -40,6 +40,7 @@ import { DisclaimerModal } from "./components/DisclaimerModal";
 import { CurriculumHome } from "./components/CurriculumHome";
 import { GuidedStepView } from "./components/GuidedStepView";
 import { LessonCompleteModal } from "./components/LessonCompleteModal";
+import { ManualPagePane } from "./components/ManualPagePane";
 
 const API_KEY_STORAGE = "neis_gemini_api_key";
 const API_KEY_DISMISSED_STORAGE = "neis_api_key_modal_dismissed";
@@ -154,6 +155,9 @@ export function App() {
   const [isTutorialActive, setIsTutorialActive] = useState<boolean>(false);
   const [currentScenario, setCurrentScenario] = useState<TutorialScenario>(TUTORIAL_SCENARIOS[0]);
   const [tutorialStepIndex, setTutorialStepIndex] = useState<number>(0);
+
+  // 튜토리얼 옆 매뉴얼 페이지 창 표시 여부
+  const [showManualPane, setShowManualPane] = useState<boolean>(true);
 
   // 학습 여정(커리큘럼) State
   const [viewMode, setViewMode] = useState<"journey" | "workspace">("journey");
@@ -575,6 +579,8 @@ export function App() {
           onReset={() => setTutorialStepIndex(0)}
           onExit={handleExitTutorial}
           onOpenChatWithStep={askAiAboutCurrentStep}
+          manualPaneOpen={showManualPane}
+          onToggleManualPane={() => setShowManualPane((v) => !v)}
         />
       )}
 
@@ -824,6 +830,14 @@ export function App() {
             )}
           </div>
         </main>
+
+        {/* 튜토리얼 옆 매뉴얼 원본 페이지 */}
+        {isTutorialActive && currentStep?.manualPage && showManualPane && (
+          <ManualPagePane
+            page={Number(currentStep.manualPage)}
+            onClose={() => setShowManualPane(false)}
+          />
+        )}
       </div>
       )}
 
