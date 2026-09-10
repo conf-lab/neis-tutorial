@@ -3,6 +3,8 @@ import { CurriculumLesson, TutorialScenario } from "../types";
 import { getManualPageUrl } from "../utils/manual";
 import { explainNeisButton, explainNeisMenu, isActionButton } from "../data/neisGlossary";
 import { PracticeForm } from "./PracticeForm";
+import { getPracticeScreen } from "../data/practiceScreens";
+import { MENU_STRUCTURE } from "../data/manualData";
 import {
   Check,
   ChevronRight,
@@ -90,10 +92,17 @@ export const GuidedStepView: React.FC<GuidedStepViewProps> = ({
     setPracticeSaved(false);
   }, [stepIndex, scenario.id]);
 
+  const practice = step ? getPracticeScreen(lesson?.id, step) : undefined;
   const showPractice =
+    !!practice ||
     step?.actionRequired === "SAVE" ||
     step?.actionRequired === "FILL_FORM" ||
     step?.actionRequired === "APPROVE";
+
+  const subMenuStepBoxes = lesson
+    ? MENU_STRUCTURE[lesson.domainId]?.items.find((i) => i.id === lesson.subMenuId)?.stepBoxes
+    : undefined;
+  const screenTitle = menuPath[menuPath.length - 1];
 
   const renderTip = (token: Token) => {
     if (openTip !== token.label) return null;
@@ -305,7 +314,12 @@ export const GuidedStepView: React.FC<GuidedStepViewProps> = ({
               scenarioId={scenario.id}
               stepIndex={stepIndex}
               step={step}
+              practice={practice}
+              screenTitle={screenTitle}
+              screenStepBoxes={subMenuStepBoxes}
               onSaved={() => setPracticeSaved(true)}
+              onAdvance={onNextStep}
+              isLast={isLast}
             />
           )}
 
