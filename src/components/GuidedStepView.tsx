@@ -80,9 +80,20 @@ export const GuidedStepView: React.FC<GuidedStepViewProps> = ({
   const primaryMenu =
     menuTokens.find((t) => t.label === deepestMenu)?.label ??
     menuTokens[menuTokens.length - 1]?.label;
-  // 버튼도 실습폼도 없는 '이동만 하는' 단계
-  const navOnly = buttonTokens.length === 0 && step?.actionRequired !== "SAVE" &&
-    step?.actionRequired !== "FILL_FORM" && step?.actionRequired !== "APPROVE";
+  const practice = step ? getPracticeScreen(lesson?.id, step) : undefined;
+  const showPractice =
+    !!practice ||
+    step?.actionRequired === "SAVE" ||
+    step?.actionRequired === "FILL_FORM" ||
+    step?.actionRequired === "APPROVE";
+
+  // 버튼도 실습화면도 없는 '이동만 하는' 단계
+  const navOnly =
+    !practice &&
+    buttonTokens.length === 0 &&
+    step?.actionRequired !== "SAVE" &&
+    step?.actionRequired !== "FILL_FORM" &&
+    step?.actionRequired !== "APPROVE";
 
   const [openTip, setOpenTip] = useState<string | null>(null);
   const [practiceSaved, setPracticeSaved] = useState(false);
@@ -91,13 +102,6 @@ export const GuidedStepView: React.FC<GuidedStepViewProps> = ({
     setOpenTip(null);
     setPracticeSaved(false);
   }, [stepIndex, scenario.id]);
-
-  const practice = step ? getPracticeScreen(lesson?.id, step) : undefined;
-  const showPractice =
-    !!practice ||
-    step?.actionRequired === "SAVE" ||
-    step?.actionRequired === "FILL_FORM" ||
-    step?.actionRequired === "APPROVE";
 
   const subMenuStepBoxes = lesson
     ? MENU_STRUCTURE[lesson.domainId]?.items.find((i) => i.id === lesson.subMenuId)?.stepBoxes

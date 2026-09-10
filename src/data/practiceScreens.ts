@@ -517,6 +517,840 @@ export const PRACTICE_SCREENS: Record<string, PracticeScreen> = {
     ],
     resultBadge: "저장됨",
   },
+
+  // ─────────────────────────────────────────────────────────────
+  // 2단계 · 학기 중 수시 업무
+  // ─────────────────────────────────────────────────────────────
+
+  // l-daily-attendance · 일일출결 입력 · 비고등록
+  "l-daily-attendance:2": {
+    kind: "form",
+    activeStepBox: "일일출결관리",
+    intro:
+      "해당 날짜·학생 칸을 눌러 결석/지각/조퇴를 입력합니다. 결석은 질병·미인정·기타로 구분합니다.",
+    toolbar: ["조회", "저장"],
+    fields: [
+      { key: "student", label: "학생", type: "select", options: STUDENTS_4_1, sample: "김하은" },
+      { key: "date", label: "일자", type: "date", sample: "2026-05-12" },
+      {
+        key: "type",
+        label: "출결 구분",
+        type: "select",
+        options: ["결석(질병)", "결석(미인정)", "결석(기타)", "지각", "조퇴", "결과"],
+        sample: "결석(질병)",
+      },
+    ],
+    result: [
+      "일일출결부의 해당 칸이 선택한 구분으로 표시됩니다.",
+      "월별 출결 마감 시 이 기록이 집계되어 재적 통계와 출결특기사항의 근거가 됩니다.",
+    ],
+    resultBadge: "저장됨",
+  },
+  "l-daily-attendance:3": {
+    kind: "form",
+    activeStepBox: "일일출결관리",
+    intro:
+      "결석 사유는 보조장부인 '비고'에 함께 적어 두는 것이 좋습니다. 나중에 특기사항 작성과 감사 대비에 쓰입니다.",
+    fields: [
+      { key: "student", label: "학생", type: "select", options: STUDENTS_4_1, sample: "김하은" },
+      { key: "date", label: "일자", type: "date", sample: "2026-05-12" },
+      { key: "memo", label: "비고(사유)", type: "textarea", sample: "감기로 인한 질병결석. 보호자 확인 및 병원 진료확인서 제출.", full: true },
+    ],
+    result: [
+      "비고(보조장부)에 사유가 기록되고 일일출결과 함께 저장됩니다.",
+      "3일 이상 연속 결석이면 별도 관리 대상으로 표시됩니다.",
+    ],
+    resultBadge: "저장됨",
+  },
+
+  // l-lesson-progress · 교과진도표 · 주간학습안내 · 결보강
+  "l-lesson-progress:1": {
+    kind: "batch",
+    intro: "학기 교육과정을 바탕으로 교과별 진도표를 자동 생성합니다.",
+    batchAction: "교과진도표 생성",
+    batchPreview: [
+      "2026-1학기 4학년 전 교과 진도표",
+      "편제 시수 기준 차시 배분",
+      "학사일정(수업일수) 반영",
+    ],
+    result: [
+      "교과별 주차·차시별 진도표가 생성됩니다.",
+      "[주간학습안내작성]에서 [진도표 불러오기]로 주간 계획을 만들 수 있게 됩니다.",
+    ],
+    resultBadge: "생성됨",
+  },
+  "l-lesson-progress:2": {
+    kind: "grid",
+    intro: "진도표를 불러와 이번 주 교과별 학습주제를 정리하고 안내장을 만듭니다.",
+    toolbar: ["조회", "진도표 불러오기", "행추가", "출력"],
+    columns: [
+      { key: "subject", label: "교과", type: "select", options: ["국어", "수학", "사회", "과학", "영어"], sample: "국어" },
+      { key: "hours", label: "차시", type: "number", sample: "4" },
+      { key: "topic", label: "학습 주제", sample: "이야기의 흐름 파악하기" },
+    ],
+    seedRows: [{ subject: "수학", hours: "4", topic: "분수의 덧셈과 뺄셈" }],
+    sampleRow: { subject: "국어", hours: "4", topic: "이야기의 흐름 파악하기" },
+    result: [
+      "이번 주 주간학습안내가 저장되고 출력·가정 안내가 가능해집니다.",
+      "진도 실적은 교과진도표에 자동 반영됩니다.",
+    ],
+    resultBadge: "저장됨",
+  },
+  "l-lesson-progress:3": {
+    kind: "approve",
+    intro:
+      "교사 결강이 생기면 보강 교사와 시간을 지정해 결재로 올립니다.",
+    docTitle: "결보강 처리 승인요청 (5/20 4교시 과학)",
+    approvalLine: [
+      { role: "기안(담당)", name: "강교사" },
+      { role: "교무부장", name: "최교사" },
+      { role: "교감", name: "윤교감" },
+    ],
+    result: [
+      "결보강 문서가 상신되어 '결재중'이 됩니다.",
+      "완결되면 결강·보강 시수가 복무·시간표 실적에 반영됩니다.",
+    ],
+    resultBadge: "결재중",
+  },
+
+  // l-changche-log · 창의적체험활동 누가기록
+  "l-changche-log:2": {
+    kind: "form",
+    intro:
+      "자율·자치활동과 진로활동의 누가기록을 활동일자별로 남깁니다. (자율·자치·진로는 생기부 연동, 동아리는 비연동)",
+    toolbar: ["조회", "저장"],
+    fields: [
+      { key: "area", label: "영역", type: "select", options: ["자율·자치활동", "진로활동"], sample: "자율·자치활동" },
+      { key: "date", label: "활동일자", type: "date", sample: "2026-05-08" },
+      { key: "target", label: "대상", type: "select", options: ["학급 전체", "모둠", "개인"], sample: "학급 전체" },
+      { key: "content", label: "활동 내용", type: "textarea", sample: "학급 규칙 제정을 위한 학급회의를 진행하며 의견을 조율하고 다수결로 결정하는 과정을 경험함.", full: true },
+    ],
+    result: [
+      "누가기록이 활동일자순으로 쌓입니다.",
+      "[학생부자료기록]에서 반영하면 생기부 창의적체험활동 자율·진로 영역에 자동 연동됩니다.",
+    ],
+    resultBadge: "저장됨",
+  },
+  "l-changche-log:3": {
+    kind: "batch",
+    intro: "쌓인 누가기록을 확인하고 생기부에 반영합니다.",
+    batchAction: "학생부자료기록 반영",
+    batchPreview: ["자율·자치활동 누가기록 → 생기부", "진로활동 누가기록 → 생기부", "봉사활동 실적 연계"],
+    result: [
+      "자율·자치·진로활동 특기사항이 생기부 창의적체험활동 영역에 반영됩니다.",
+      "동아리활동은 비연동이므로 학기 말 {동아리특기사항가져오기}를 따로 실행해야 합니다.",
+    ],
+    resultBadge: "반영됨",
+  },
+
+  // l-club-log · 동아리활동 누가기록
+  "l-club-log:2": {
+    kind: "form",
+    activeStepBox: "동아리활동관리",
+    intro: "동아리담임이 활동일자별 누가기록과 특기사항을 입력합니다.",
+    toolbar: ["조회", "저장"],
+    fields: [
+      { key: "club", label: "동아리", type: "select", options: ["로봇코딩부", "어린이방송부", "환경지킴이부", "창의미술부", "배드민턴부"], sample: "로봇코딩부" },
+      { key: "date", label: "활동일자", type: "date", sample: "2026-05-14" },
+      { key: "content", label: "활동 내용", type: "textarea", sample: "라인트레이서 센서 값을 읽어 조건에 따라 방향을 바꾸는 블록 코딩을 완성하고 시연함.", full: true },
+      { key: "remark", label: "특기사항", type: "textarea", sample: "센서 동작 원리를 정확히 이해하고 오류 상황을 스스로 디버깅하는 문제해결력이 돋보임.", full: true, optional: true },
+    ],
+    result: [
+      "동아리 누가기록이 쌓여 학기 말 특기사항의 원본이 됩니다.",
+      "동아리활동은 생기부 비연동이므로, 학기 말 [학생부자료기록]에서 {동아리특기사항가져오기}가 필요합니다.",
+    ],
+    resultBadge: "저장됨",
+  },
+
+  // l-awards · 수상대장 관리 · 상장 출력
+  "l-awards:2": {
+    kind: "form",
+    intro: "상장번호 채번 규칙을 정합니다. 초등학교는 보통 자동채번3(학년도-학년-번호)을 씁니다.",
+    fields: [
+      { key: "rule", label: "채번 방식", type: "select", options: ["자동채번3 (학년도-학년-번호)", "자동채번1 (연번)", "수동입력"], sample: "자동채번3 (학년도-학년-번호)" },
+      { key: "start", label: "시작 번호", type: "number", sample: "1" },
+    ],
+    result: [
+      "이후 수상대장을 등록하면 상장번호가 규칙에 따라 자동으로 매겨집니다.",
+      "2019학년도부터 교내 수상경력은 생기부에 반영되지 않고 대장으로만 관리됩니다.",
+    ],
+    resultBadge: "저장됨",
+  },
+  "l-awards:3": {
+    kind: "grid",
+    intro: "수상 내역을 대장에 등록합니다. 상장번호는 저장 시 자동 부여됩니다.",
+    toolbar: ["조회", "행추가", "상장출력"],
+    columns: [
+      { key: "name", label: "수상명", sample: "교내 독서골든벨 최우수" },
+      { key: "date", label: "수여일", type: "date", sample: "2026-05-30" },
+      { key: "student", label: "대상 학생", type: "select", options: STUDENTS_4_1, sample: "김하은" },
+      { key: "rank", label: "등급", sample: "최우수(1위)" },
+    ],
+    seedRows: [{ name: "교내 사생대회 우수", date: "2026-04-25", student: "이지유", rank: "우수" }],
+    sampleRow: { name: "교내 독서골든벨 최우수", date: "2026-05-30", student: "김하은", rank: "최우수(1위)" },
+    result: [
+      "수상대장에 기록되고 상장번호(2026-4-00N)가 자동 부여됩니다.",
+      "[상장출력]으로 상장 서식을 인쇄할 수 있습니다.",
+    ],
+    resultBadge: "저장됨",
+  },
+
+  // l-behavior-log · 행동특성 및 종합의견 누가기록
+  "l-behavior-log:2": {
+    kind: "form",
+    intro: "학생별 행동 관찰 내용을 수시로 누가기록합니다. 이 기록이 학기 말 종합의견 문장의 근거가 됩니다.",
+    toolbar: ["조회", "저장"],
+    fields: [
+      { key: "student", label: "학생", type: "select", options: STUDENTS_4_1, sample: "박도윤" },
+      { key: "date", label: "관찰일자", type: "date", sample: "2026-05-20" },
+      { key: "content", label: "관찰 내용", type: "textarea", sample: "과학 실험에서 변인을 스스로 통제하며 결과를 기록하고, 모둠원에게 절차를 차분히 설명함.", full: true },
+    ],
+    result: [
+      "관찰 누가기록이 날짜순으로 쌓입니다.",
+      "학기 말 [행동특성 및 종합의견]에서 이 기록을 불러와 종합의견 문장을 작성합니다.",
+    ],
+    resultBadge: "저장됨",
+  },
+
+  // l-school-violence · 학교폭력 조치상황 관리
+  "l-school-violence:2": {
+    kind: "form",
+    intro:
+      "2026학년도는 1·2·3학년만 이 메뉴에 입력합니다. 4~6학년은 학적사항·출결 특기사항 및 행동특성에 분리 기재합니다.",
+    toolbar: ["조회", "등록", "저장"],
+    fields: [
+      { key: "grade", label: "대상 학년", type: "select", options: ["1학년", "2학년", "3학년"], sample: "3학년" },
+      { key: "student", label: "학생", sample: "3학년 2반 05번" },
+      { key: "date", label: "조치일자", type: "date", sample: "2026-06-03" },
+      {
+        key: "measure",
+        label: "조치 결정사항",
+        type: "select",
+        options: ["제1호 서면사과", "제2호 접촉·협박·보복 금지", "제3호 학교봉사", "제4호 사회봉사", "제5호 특별교육", "제6호 출석정지", "제7호 학급교체"],
+        sample: "제1호 서면사과",
+      },
+    ],
+    result: [
+      "학교폭력 조치사항이 전용 메뉴에 기록됩니다(1~3학년).",
+      "4~6학년 사안은 이 메뉴가 아니라 관련 특기사항 항목에 나눠 적어야 합니다.",
+    ],
+    resultBadge: "저장됨",
+  },
+
+  // l-observation · 관찰내용 관리 (나이스플러스 연계)
+  "l-observation:2": {
+    kind: "form",
+    intro: "수업·평가 장면의 관찰기록을 남기거나, 나이스플러스에서 자료를 가져옵니다.",
+    toolbar: ["조회", "나이스플러스 가져오기", "저장"],
+    fields: [
+      { key: "student", label: "학생", type: "select", options: STUDENTS_4_1, sample: "강민우" },
+      { key: "subject", label: "교과", type: "select", options: ["국어", "수학", "사회", "과학", "영어"], sample: "수학" },
+      { key: "scene", label: "관찰 장면", sample: "분수 나눗셈 문제해결 발표", optional: true },
+      { key: "content", label: "관찰 내용", type: "textarea", sample: "분수를 소수로 바꾸는 여러 방법을 비교하고, 가장 효율적인 방법을 근거를 들어 설명함.", full: true },
+    ],
+    result: [
+      "관찰기록이 학생·교과별로 축적됩니다.",
+      "교과평가와 학기말 종합의견 작성 시 [참고자료조회]로 불러와 활용할 수 있습니다.",
+    ],
+    resultBadge: "저장됨",
+  },
+
+  // l-parent-service · 학부모서비스 승인관리
+  "l-parent-service:2": {
+    kind: "batch",
+    intro: "학부모 나이스 서비스 신청 건을 확인하고 본인확인이 된 건을 일괄 승인합니다.",
+    batchAction: "일괄승인",
+    batchPreview: [
+      "강민우 보호자 (본인확인 완료)",
+      "박도윤 보호자 (본인확인 완료)",
+      "이지유 보호자 (본인확인 완료)",
+    ],
+    batchNote: "본인확인이 안 된 신청은 승인하지 말고 별도 확인 후 처리합니다.",
+    result: [
+      "승인된 보호자는 자녀의 성적·출결·생기부를 학부모서비스에서 조회할 수 있게 됩니다.",
+      "승인 거부한 건은 사유와 함께 신청자에게 통지됩니다.",
+    ],
+    resultBadge: "3건 승인",
+  },
+
+  // l-iep-monthly · 개별화교육계획 월별 목표 · 평가
+  "l-iep-monthly:2": {
+    kind: "form",
+    intro: "학기별·월별 교육목표와 교육내용, 평가준거를 작성합니다.",
+    fields: [
+      { key: "student", label: "대상 학생", type: "select", options: STUDENTS_4_1, sample: "정시우" },
+      { key: "month", label: "해당 월", type: "select", options: ["3월", "4월", "5월", "6월", "7월"], sample: "5월" },
+      { key: "goal", label: "교육 목표", type: "textarea", sample: "받침 있는 글자를 정확히 읽고 쓸 수 있다.", full: true },
+      { key: "content", label: "교육 내용", type: "textarea", sample: "받침 카드 짝짓기, 낱말 받아쓰기, 짧은 문장 만들기 활동.", full: true },
+      { key: "criteria", label: "평가 준거", type: "textarea", sample: "받침 있는 낱말 10개 중 8개 이상 정확히 읽고 쓴다.", full: true },
+    ],
+    result: [
+      "월별 개별화교육계획이 저장됩니다.",
+      "작성이 끝나면 다음 단계에서 [마감] 후 [승인요청]으로 상신합니다.",
+    ],
+    resultBadge: "저장됨",
+  },
+  "l-iep-monthly:3": {
+    kind: "close",
+    thenApprove: true,
+    closeUnit: "개별화교육계획 (5월)",
+    intro: "작성이 끝난 월별 계획을 마감하고 결재로 올립니다.",
+    closeChecklist: [
+      "월별 교육목표·교육내용·평가준거를 모두 입력했습니다.",
+      "담당 특수교사 검토를 마쳤습니다.",
+    ],
+    approvalLine: [
+      { role: "기안(특수교사)", name: "조교사" },
+      { role: "교감", name: "윤교감" },
+      { role: "교장", name: "한교장" },
+    ],
+    result: [
+      "해당 월 개별화교육계획이 마감되어 잠기고, 승인요청 문서가 상신됩니다.",
+      "완결되면 보호자에게 개별화교육계획이 안내됩니다.",
+    ],
+    resultBadge: "마감 · 결재중",
+  },
+
+  // ─────────────────────────────────────────────────────────────
+  // 4단계 · 학기 말 마감
+  // ─────────────────────────────────────────────────────────────
+
+  // l-subject-eval · 교과평가 입력
+  "l-subject-eval:2": {
+    kind: "grid",
+    intro:
+      "학년·교과·평가영역을 선택한 뒤 학생별 성취기준 도달 단계를 입력합니다. (매우잘함/잘함/보통/노력요함 4단계)",
+    toolbar: ["조회", "일괄복사", "저장"],
+    columns: [
+      { key: "student", label: "학생", sample: "강민우" },
+      {
+        key: "level",
+        label: "도달 단계",
+        type: "select",
+        options: ["매우잘함", "잘함", "보통", "노력요함"],
+        sample: "매우잘함",
+      },
+    ],
+    seedRows: [
+      { student: "강민우", level: "" },
+      { student: "김하은", level: "" },
+      { student: "박도윤", level: "" },
+      { student: "이지유", level: "" },
+      { student: "정시우", level: "" },
+    ],
+    minRows: 5,
+    result: [
+      "학생별 교과평가 결과가 저장됩니다.",
+      "다음 단계 [학생/학부모서비스 반영]을 실행해야 학생·보호자가 결과를 볼 수 있습니다.",
+      "이 결과는 학기말 종합의견·교과학습발달상황의 바탕이 됩니다.",
+    ],
+    resultBadge: "저장됨",
+  },
+  "l-subject-eval:3": {
+    kind: "batch",
+    intro: "입력한 교과평가 결과를 학생·학부모서비스에 공개합니다.",
+    batchAction: "학생/학부모서비스 반영",
+    batchPreview: ["4학년 1반 전 교과 평가결과", "성취기준별 도달 단계", "교과별 평어"],
+    result: [
+      "학생과 보호자가 학부모서비스에서 교과평가 결과를 조회할 수 있게 됩니다.",
+      "반영 후 결과를 고치면 다시 반영해야 최신 내용이 공개됩니다.",
+    ],
+    resultBadge: "반영됨",
+  },
+
+  // l-term-opinion · 학기말 종합의견 작성
+  "l-term-opinion:2": {
+    kind: "batch",
+    intro: "교과평가와 관찰기록을 불러와 종합의견 초안을 만듭니다.",
+    batchAction: "참고자료 가져오기",
+    batchPreview: [
+      "교과평가 평어 (국어·수학·사회·과학)",
+      "관찰내용관리 누가기록",
+      "교과평가 일괄복사 문구",
+    ],
+    result: [
+      "학생별 참고자료가 종합의견 입력란에 초안으로 채워집니다.",
+      "초안을 그대로 두지 말고 학생 개별 특성에 맞게 문장을 다듬어야 합니다.",
+    ],
+    resultBadge: "불러옴",
+  },
+  "l-term-opinion:3": {
+    kind: "form",
+    intro: "학생별 문장을 다듬고 맞춤법 검사를 한 뒤 저장합니다.",
+    toolbar: ["조회", "맞춤법검사", "저장"],
+    fields: [
+      { key: "student", label: "학생", type: "select", options: STUDENTS_4_1, sample: "강민우" },
+      {
+        key: "opinion",
+        label: "학기말 종합의견",
+        type: "textarea",
+        sample: "자신의 생각을 논리적으로 표현하고 친구의 의견을 경청하며, 수학적 문제 상황에서 다양한 해결 전략을 스스로 탐구하는 태도가 우수함.",
+        full: true,
+      },
+    ],
+    result: [
+      "학생별 종합의견 문장이 저장됩니다.",
+      "다음 단계에서 [교과학습발달상황 일괄저장]으로 생기부에 반영합니다.",
+    ],
+    resultBadge: "저장됨",
+  },
+
+  // l-learning-dev · 교과학습발달상황 생기부 반영
+  "l-learning-dev:2": {
+    kind: "batch",
+    intro: "학기말 종합의견을 교과학습발달상황으로 통합 기록해 생기부에 반영합니다.",
+    batchAction: "학기말종합의견 일괄저장",
+    batchPreview: ["4학년 1반 5명 종합의견", "교과학습발달상황 항목으로 통합", "생기부 반영 대기 → 반영"],
+    result: [
+      "종합의견이 생기부 교과학습발달상황 영역으로 저장됩니다.",
+      "이후 자료검증에서 이 항목의 누락 여부가 점검됩니다.",
+    ],
+    resultBadge: "반영됨",
+  },
+
+  // l-autonomous-eval · 학교자율시간 학생평가 · 종합의견
+  "l-autonomous-eval:2": {
+    kind: "grid",
+    intro: "학교자율시간 과목(활동)의 평가결과와 종합의견을 입력하고 교과학습발달상황에 연계합니다.",
+    toolbar: ["조회", "저장"],
+    columns: [
+      { key: "student", label: "학생", sample: "강민우" },
+      { key: "level", label: "평가결과", type: "select", options: ["매우잘함", "잘함", "보통", "노력요함"], sample: "매우잘함" },
+      { key: "opinion", label: "종합의견(요약)", sample: "정보윤리를 실천하며 협업을 주도함" },
+    ],
+    seedRows: [
+      { student: "강민우", level: "", opinion: "" },
+      { student: "김하은", level: "", opinion: "" },
+    ],
+    minRows: 2,
+    result: [
+      "학교자율시간 '디지털 민주시민(활동)' 평가가 저장됩니다.",
+      "교과학습발달상황에 연계 반영되어 생기부의 별도 항목으로 기재됩니다.",
+    ],
+    resultBadge: "저장됨",
+  },
+
+  // l-attendance-special · 출결특기사항 (개근 일괄입력)
+  "l-attendance-special:2": {
+    kind: "batch",
+    activeStepBox: "출결특기사항등록",
+    intro: "결석·지각·조퇴가 없는 학생에게 '개근'을 한 번에 입력한 뒤, 개별 특기사항을 보완합니다.",
+    batchAction: "개근 일괄입력",
+    batchPreview: [
+      "강민우 · 박도윤 (결석·지각·조퇴 0) → '개근'",
+      "김하은 (질병결석 2) → 개근 제외, 개별 특기사항 필요",
+      "정시우 (지각 1) → 개근 제외",
+    ],
+    result: [
+      "출결이 완전한 학생에게 '개근'이 일괄 입력됩니다.",
+      "개근이 아닌 학생은 결석·지각 사유를 특기사항에 개별 입력해야 합니다.",
+      "출결특기사항이 완성되면 생기부 출결상황 영역이 확정됩니다.",
+    ],
+    resultBadge: "개근 3명 입력",
+  },
+
+  // l-changche-special · 창체 특기사항 정리 · 동아리특기사항 가져오기
+  "l-changche-special:2": {
+    kind: "batch",
+    intro:
+      "동아리활동 특기사항은 생기부에 자동 연동되지 않습니다. 이 버튼으로 동아리담임이 입력한 특기사항을 생기부로 가져와야 합니다.",
+    batchAction: "동아리특기사항가져오기",
+    batchPreview: ["로봇코딩부 · 어린이방송부 · 환경지킴이부 등 부서별 특기사항", "부서원별 매칭 → 생기부 동아리활동 영역"],
+    result: [
+      "동아리담임이 입력한 특기사항이 생기부 창의적체험활동 동아리활동 영역으로 복사됩니다.",
+      "이 작업을 빠뜨리면 동아리활동 칸이 비어 감사 지적을 받습니다.",
+    ],
+    resultBadge: "가져옴",
+  },
+  "l-changche-special:3": {
+    kind: "close",
+    closeUnit: "생기부 창의적체험활동",
+    primaryAction: "저장",
+    intro: "자율·자치·진로·동아리 4개 영역이 모두 채워졌는지 확인하고 저장합니다.",
+    closeChecklist: [
+      "자율·자치활동 특기사항이 반영되었습니다.",
+      "진로활동 특기사항이 반영되었습니다.",
+      "동아리활동 특기사항을 {동아리특기사항가져오기}로 가져왔습니다.",
+    ],
+    result: [
+      "창의적체험활동 4개 영역이 모두 생기부에 반영됩니다.",
+      "이후 자료검증에서 빈 영역이 없는지 다시 확인합니다.",
+    ],
+    resultBadge: "저장됨",
+  },
+
+  // l-behavior-opinion · 행동특성 및 종합의견 완성
+  "l-behavior-opinion:2": {
+    kind: "form",
+    intro: "누가기록 연계 자료를 참고해 학생별 종합의견을 작성하고 맞춤법 검사를 실행합니다.",
+    toolbar: ["조회", "누가기록 불러오기", "맞춤법검사", "훈령정보조회"],
+    fields: [
+      { key: "student", label: "학생", type: "select", options: STUDENTS_4_1, sample: "박도윤" },
+      {
+        key: "opinion",
+        label: "행동특성 및 종합의견",
+        type: "textarea",
+        sample: "호기심이 많고 탐구적인 자세로 새로운 과제에 도전하며, 실험 과정에서 끈기 있게 결과를 확인함. 급우들에게 절차를 차분히 설명하는 배려심이 돋보임.",
+        full: true,
+      },
+    ],
+    result: [
+      "학생별 행동특성 및 종합의견 문장이 저장됩니다.",
+      "맞춤법 검사에서 걸린 표현은 저장 전에 다듬는 것이 좋습니다.",
+    ],
+    resultBadge: "저장됨",
+  },
+  "l-behavior-opinion:3": {
+    kind: "batch",
+    intro: "작성한 종합의견을 생기부에 반영합니다.",
+    batchAction: "학생부반영기록 저장",
+    batchPreview: ["4학년 1반 5명 행동특성 및 종합의견", "생기부 '행동특성 및 종합의견' 영역 반영"],
+    result: [
+      "행동특성 및 종합의견이 생기부에 반영됩니다.",
+      "반영 후 수정하면 다시 저장해야 생기부에 최신 문장이 들어갑니다.",
+    ],
+    resultBadge: "반영됨",
+  },
+
+  // l-health-record · 건강기록부 반별 등록
+  "l-health-record:2": {
+    kind: "batch",
+    intro: "학급 학생을 건강기록부에 올려 입력 준비를 합니다.",
+    batchAction: "인적사항생성",
+    batchPreview: ["4학년 1반 5명 → 건강기록부 명단", "예방접종·신체발달·PAPS·검진 입력칸 생성"],
+    result: [
+      "학급 학생이 건강기록부에 등록되어 항목별 입력이 가능해집니다.",
+      "전입생 등 누락 학생은 개별로 추가합니다.",
+    ],
+    resultBadge: "5명 생성",
+  },
+  "l-health-record:3": {
+    kind: "grid",
+    intro: "키·몸무게를 입력하면 BMI가 자동 계산됩니다. PAPS 등급과 건강검진 결과도 입력합니다.",
+    toolbar: ["조회", "PAPS 불러오기", "저장"],
+    columns: [
+      { key: "student", label: "학생", sample: "강민우" },
+      { key: "height", label: "키(cm)", type: "number", sample: "139.5" },
+      { key: "weight", label: "몸무게(kg)", type: "number", sample: "34.2" },
+      { key: "paps", label: "PAPS 등급", type: "select", options: ["1등급", "2등급", "3등급", "4등급", "5등급"], sample: "1등급" },
+      { key: "checkup", label: "검진일", type: "date", sample: "2026-04-18" },
+    ],
+    seedRows: [
+      { student: "강민우", height: "", weight: "", paps: "", checkup: "" },
+      { student: "김하은", height: "", weight: "", paps: "", checkup: "" },
+    ],
+    minRows: 2,
+    result: [
+      "신체발달 항목이 저장되고 키·몸무게로 BMI가 자동 계산됩니다.",
+      "다음 단계 [자료검증]에서 누락·이상치를 점검합니다.",
+    ],
+    resultBadge: "저장됨",
+  },
+  "l-health-record:4": {
+    kind: "batch",
+    intro: "건강기록부 입력값의 누락·오류를 자동 점검합니다.",
+    batchAction: "자료검증",
+    batchPreview: ["예방접종 미입력 여부", "신체발달 이상치(키/몸무게)", "PAPS·검진 누락 여부"],
+    result: [
+      "'확인필요' 항목 목록이 표시됩니다 — 보완해야 반마감이 가능합니다.",
+      "검증을 통과하면 다음 주제에서 반마감·학년마감을 진행합니다.",
+    ],
+    resultBadge: "검증 완료",
+  },
+
+  // l-health-close · 건강기록부 반마감 · 학년마감
+  "l-health-close:2": {
+    kind: "close",
+    closeUnit: "우리 반 건강기록부 (4학년 1반)",
+    intro: "검증을 통과한 학급 건강기록부를 반마감합니다.",
+    closeChecklist: [
+      "예방접종·신체발달·PAPS·건강검진을 모두 입력했습니다.",
+      "[자료검증] 결과 '확인필요' 항목이 없습니다.",
+    ],
+    result: [
+      "우리 반 건강기록부가 마감되어 잠깁니다.",
+      "학년 내 모든 반이 반마감되면 [학년 전체마감]을 할 수 있습니다.",
+    ],
+    resultBadge: "반마감",
+  },
+  "l-health-close:3": {
+    kind: "close",
+    thenApprove: true,
+    closeUnit: "4학년 전체 건강기록부",
+    intro: "모든 반이 반마감되면 학년 전체를 마감하고 승인요청을 상신합니다.",
+    closeChecklist: ["4학년 전체 학급이 반마감되었습니다."],
+    approvalLine: [
+      { role: "기안(담당)", name: "박교사" },
+      { role: "보건교사", name: "보건교사" },
+      { role: "교감", name: "윤교감" },
+      { role: "교장", name: "한교장" },
+    ],
+    result: [
+      "4학년 건강기록부가 학년마감되고 승인요청 문서가 상신됩니다.",
+      "완결되면 생기부와 함께 확정되고, 졸업생은 상급학교 전송 대상이 됩니다.",
+    ],
+    resultBadge: "학년마감 · 결재중",
+  },
+
+  // l-record-close · 학생부 학년 전체마감 및 승인요청
+  "l-record-close:3": {
+    kind: "close",
+    thenApprove: true,
+    closeUnit: "4학년 학교생활기록부",
+    intro: "학년 내 모든 반이 마감되면 학년 전체를 마감하고 관리자에게 승인요청을 상신합니다.",
+    closeChecklist: [
+      "4학년 전체 학급이 반마감되었습니다.",
+      "자료검증 '확인필요' 항목이 모두 해결되었거나 예외처리되었습니다.",
+      "학생별 세부사항을 최종 확인했습니다.",
+    ],
+    approvalLine: [
+      { role: "기안(학년부장)", name: "박교사" },
+      { role: "교무부장", name: "최교사" },
+      { role: "교감", name: "윤교감" },
+      { role: "교장", name: "한교장" },
+    ],
+    result: [
+      "4학년 생기부가 학년마감되어 결재 라인에 올라갑니다.",
+      "완결되면 해당 학년 생기부가 최종 확정되고, 이후 수정은 정정대장(4단 결재)으로만 가능합니다.",
+    ],
+    resultBadge: "학년마감 · 결재중",
+  },
+
+  // l-report-card · 생활통지표 등록 · 반영 · 마감
+  "l-report-card:1": {
+    kind: "form",
+    activeStepBox: "통지표 등록",
+    intro: "통지표 표지와 학교 교육목표를 설정합니다.",
+    fields: [
+      { key: "title", label: "통지표 제목", sample: "2026학년도 1학기 생활통지표" },
+      { key: "goal", label: "학교 교육목표", type: "textarea", sample: "배움을 즐기고 서로를 존중하는 어린이", full: true },
+      { key: "cover", label: "표지 안내 문구", sample: "가정에서 자녀와 함께 읽어 주세요.", optional: true, full: true },
+    ],
+    result: [
+      "통지표 서식이 만들어져 다음 단계에서 자료를 반영할 수 있게 됩니다.",
+    ],
+    resultBadge: "저장됨",
+  },
+  "l-report-card:2": {
+    kind: "batch",
+    activeStepBox: "자료반영 및 마감관리",
+    intro: "여러 메뉴에 입력한 자료를 통지표로 모아 넣습니다.",
+    batchAction: "전체반영",
+    batchPreview: ["교과평가 결과", "출결 현황", "창의적체험활동 특기사항", "행동특성 및 종합의견"],
+    result: [
+      "흩어진 자료가 통지표 양식에 채워집니다.",
+      "이후 항목을 고치면 다시 [전체반영]해야 통지표에 반영됩니다.",
+    ],
+    resultBadge: "반영됨",
+  },
+  "l-report-card:3": {
+    kind: "form",
+    intro: "학생별 개인통신문(담임 개별 메시지)을 작성합니다.",
+    toolbar: ["조회", "맞춤법검사", "저장"],
+    fields: [
+      { key: "student", label: "학생", type: "select", options: STUDENTS_4_1, sample: "이지유" },
+      { key: "message", label: "개인통신문", type: "textarea", sample: "예술적 감수성이 풍부하고 친구를 배려하는 마음이 따뜻합니다. 2학기에는 발표에 조금 더 자신감을 가지면 좋겠습니다.", full: true },
+    ],
+    result: ["학생별 개인통신문이 통지표에 포함됩니다."],
+    resultBadge: "저장됨",
+  },
+  "l-report-card:4": {
+    kind: "close",
+    activeStepBox: "통지표 마감",
+    closeUnit: "우리 반 통지표",
+    thenApprove: false,
+    intro: "반마감 후 학기별 통지표 마감을 실행합니다.",
+    closeChecklist: [
+      "전체반영을 실행해 통지표에 자료가 채워졌습니다.",
+      "개인통신문을 모두 작성했습니다.",
+    ],
+    result: [
+      "통지표가 반마감·학기마감되어 출력·배부할 수 있습니다.",
+      "마감 후 자료가 바뀌면 마감취소 후 다시 반영·마감해야 합니다.",
+    ],
+    resultBadge: "마감",
+  },
+
+  // l-career-transfer · 진로정보 관리 · 중학교 전송 (6학년)
+  "l-career-transfer:2": {
+    kind: "grid",
+    intro: "6학년 학생·보호자의 개인정보 제공 동의서를 등록하고 동의여부를 마감합니다.",
+    toolbar: ["조회", "행추가", "동의여부 마감"],
+    columns: [
+      { key: "student", label: "학생", sample: "6학년 1반 01번" },
+      { key: "agree", label: "개인정보 제공 동의", type: "select", options: ["동의", "미동의"], sample: "동의" },
+      { key: "guardian", label: "보호자 확인", type: "select", options: ["확인", "미확인"], sample: "확인" },
+    ],
+    seedRows: [{ student: "6학년 1반 02번", agree: "동의", guardian: "확인" }],
+    sampleRow: { student: "6학년 1반 01번", agree: "동의", guardian: "확인" },
+    result: [
+      "동의여부가 저장되고 마감됩니다.",
+      "'동의' 건만 다음 단계에서 중학교로 전송할 수 있습니다.",
+    ],
+    resultBadge: "저장됨",
+  },
+  "l-career-transfer:3": {
+    kind: "approve",
+    intro: "사전승인을 받은 뒤 진로정보를 진학 중학교로 전송합니다.",
+    docTitle: "6학년 진로정보 중학교 전송 사전승인",
+    approvalLine: [
+      { role: "기안(담당)", name: "최교사" },
+      { role: "교감", name: "윤교감" },
+      { role: "교장", name: "한교장" },
+    ],
+    result: [
+      "사전승인 문서가 상신됩니다.",
+      "완결되면 [중학교 전송]이 활성화되어 동의한 학생의 진로정보가 배정 중학교로 넘어갑니다.",
+    ],
+    resultBadge: "결재중",
+  },
+
+  // ─────────────────────────────────────────────────────────────
+  // 5단계 · 학년 말 처리
+  // ─────────────────────────────────────────────────────────────
+
+  // l-graduation · 졸업 처리
+  "l-graduation:2": {
+    kind: "batch",
+    activeStepBox: "졸업대상자생성",
+    intro: "졸업 요건을 갖춘 6학년을 졸업대상자로 만듭니다. 조기졸업자를 먼저 처리합니다.",
+    batchAction: "졸업대상자생성",
+    batchPreview: ["6학년 전체 재학생", "수료 요건(수업일수) 충족 확인", "조기졸업자 선처리"],
+    batchNote: "졸업 전에 6학년 생기부·건강기록부 마감이 완료되어 있어야 합니다.",
+    result: [
+      "6학년이 졸업대상자 목록에 오릅니다.",
+      "다음 단계에서 졸업장 번호부여·출력, 졸업생 학적반영을 진행합니다.",
+    ],
+    resultBadge: "대상자 생성",
+  },
+  "l-graduation:3": {
+    kind: "form",
+    activeStepBox: "졸업장번호부여",
+    intro: "졸업장에 일련번호를 부여하고 졸업장을 출력합니다.",
+    fields: [
+      { key: "start", label: "졸업장 시작번호", sample: "제2026-001호" },
+      { key: "date", label: "졸업일자", type: "date", sample: "2027-01-05" },
+      { key: "form", label: "출력 양식", type: "select", options: ["표준 양식", "학교 자체 양식"], sample: "표준 양식" },
+    ],
+    result: [
+      "졸업대상자에게 졸업장 번호가 순서대로 부여됩니다.",
+      "[졸업장출력]으로 졸업장을 인쇄할 수 있습니다.",
+    ],
+    resultBadge: "저장됨",
+  },
+  "l-graduation:4": {
+    kind: "batch",
+    activeStepBox: "졸업생학적반영",
+    intro: "6학년을 졸업 상태로 학적에 확정합니다. 되돌리기가 매우 어렵습니다.",
+    batchAction: "졸업생 학적반영",
+    batchPreview: ["6학년 졸업대상자 전체", "학적상태: 재학 → 졸업", "졸업일자 확정"],
+    batchNote: "졸업생 학적반영은 1~5학년 진급자 학적반영보다 반드시 먼저 해야 학적 충돌이 없습니다!",
+    result: [
+      "6학년이 '졸업' 상태로 확정되고 재적에서 빠집니다.",
+      "이제 1~5학년 진급 처리를 진행할 수 있습니다.",
+    ],
+    resultBadge: "졸업 확정",
+  },
+
+  // l-promotion · 진급자 반편성 및 학적반영
+  "l-promotion:2": {
+    kind: "batch",
+    activeStepBox: "대상자생성",
+    intro: "새 학년도 진급대상자 명단을 만듭니다. 유급·조기진급자를 먼저 처리합니다.",
+    batchAction: "진급대상자생성",
+    batchPreview: ["1~5학년 재학생 → 다음 학년 진급대상", "유급·조기진급자 선처리 대상 표시"],
+    result: [
+      "진급대상자 명단이 만들어져 반편성을 할 수 있게 됩니다.",
+      "졸업생 학적반영이 끝난 뒤여야 6학년 자리 충돌이 없습니다.",
+    ],
+    resultBadge: "대상자 생성",
+  },
+  "l-promotion:3": {
+    kind: "grid",
+    activeStepBox: "일괄반편성",
+    intro: "진급대상 학생을 새 학년의 각 반에 배정합니다. [일괄반편성] 또는 개별 조정을 씁니다.",
+    toolbar: ["조회", "일괄반편성", "행추가"],
+    columns: [
+      { key: "student", label: "학생 (현재)", sample: "3학년 1반 강민우" },
+      { key: "newclass", label: "새 학년·반", sample: "4학년 2반" },
+    ],
+    seedRows: [{ student: "3학년 1반 김하은", newclass: "4학년 1반" }],
+    sampleRow: { student: "3학년 1반 강민우", newclass: "4학년 2반" },
+    result: [
+      "새 학년도 반 구성이 저장됩니다.",
+      "반편성이 끝나면 [반번호부여]로 출석번호를 정합니다.",
+    ],
+    resultBadge: "저장됨",
+  },
+  "l-promotion:4": {
+    kind: "batch",
+    activeStepBox: "반번호부여",
+    intro: "새로 편성된 반의 학생 출석번호를 정합니다.",
+    batchAction: "반번호부여",
+    batchPreview: ["새 학급별 학생 정렬(성명 가나다 또는 생년월일)", "출석번호 1번부터 부여"],
+    result: ["새 학급의 학생 출석번호가 부여됩니다.", "결과를 조회해 이상이 없는지 확인합니다."],
+    resultBadge: "번호 부여됨",
+  },
+  "l-promotion:5": {
+    kind: "batch",
+    activeStepBox: "진급자학적반영",
+    intro: "진급을 학적에 최종 확정합니다.",
+    batchAction: "진급자 학적반영",
+    batchPreview: ["6학년(졸업반영 완료) → 5 → 4 → 3 → 2 → 1학년 순서", "학년·반·번호 확정"],
+    batchNote: "반드시 6→5→4→3→2→1학년 순서로 실행해야 학적 충돌이 없습니다.",
+    result: [
+      "1~5학년이 다음 학년으로 진급하고 새 반이 확정됩니다.",
+      "학적반영 후에는 되돌리기가 매우 어렵습니다.",
+    ],
+    resultBadge: "진급 확정",
+  },
+
+  // l-middle-school · 중학교 진학학교 확인 · 사전승인
+  "l-middle-school:2": {
+    kind: "batch",
+    intro: "교육지원청의 중학교 배정 결과를 확인하고 학생자료를 사전 일괄승인합니다.",
+    batchAction: "사전일괄승인",
+    batchPreview: ["6학년 졸업생별 배정 중학교", "학생 인적·학적 자료 확인", "전송 대상 승인"],
+    result: [
+      "졸업생의 중학교 진학 자료가 승인되어 전송 준비가 끝납니다.",
+      "생기부·건강기록부는 각 메뉴에서 별도로 전송 승인해야 합니다.",
+    ],
+    resultBadge: "승인 완료",
+  },
+
+  // l-health-transfer · 건강기록부 상급학교 전송
+  "l-health-transfer:2": {
+    kind: "approve",
+    intro: "마감된 건강기록부를 진학 중학교로 사전승인 후 전송합니다.",
+    docTitle: "졸업생 건강기록부 중학교 전송 사전승인",
+    approvalLine: [
+      { role: "기안(보건)", name: "보건교사" },
+      { role: "교감", name: "윤교감" },
+      { role: "교장", name: "한교장" },
+    ],
+    result: [
+      "전송 사전승인 문서가 상신됩니다.",
+      "완결되면 졸업생 건강기록부가 배정 중학교로 이관됩니다.",
+    ],
+    resultBadge: "결재중",
+  },
+
+  // l-iep-transfer · 개별화교육계획 전송관리
+  "l-iep-transfer:2": {
+    kind: "approve",
+    intro: "상급학교(중학교)로 특수교육대상자의 개별화교육계획을 전송 승인합니다.",
+    docTitle: "개별화교육계획 상급학교 전송 승인",
+    approvalLine: [
+      { role: "기안(특수교사)", name: "조교사" },
+      { role: "교감", name: "윤교감" },
+      { role: "교장", name: "한교장" },
+    ],
+    result: [
+      "전송 승인 문서가 상신됩니다.",
+      "완결되면 특수교육대상자의 개별화교육계획이 진학 학교로 인계됩니다.",
+    ],
+    resultBadge: "결재중",
+  },
 };
 
 /** 이 단계에 띄울 실습 화면 명세를 찾는다 (스텝에 직접 붙은 것 우선). */

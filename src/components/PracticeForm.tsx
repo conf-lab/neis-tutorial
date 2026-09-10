@@ -150,29 +150,39 @@ const NeisPracticeScreen: React.FC<PracticeFormProps & { practice: PracticeScree
   const fillExample = () => {
     const v: Record<string, string> = { ...values };
     (p.fields || []).forEach((f) => {
-      if (f.type === "checkbox") return;
-      if (f.sample) v[f.key] = f.sample;
+      if (f.type !== "checkbox" && f.sample) v[f.key] = f.sample;
     });
+    if (p.kind === "upload" && p.fileName) v.__file = p.fileName;
+
     const c: Record<string, boolean> = { ...checks };
     (p.fields || []).forEach((f) => {
       if (f.type === "checkbox" && !f.optional) c[f.key] = true;
     });
     (p.closeChecklist || []).forEach((_, i) => (c[`close${i}`] = true));
     if (p.kind === "approve") c.line = true;
+
+    if (p.kind === "grid") {
+      const cols = p.columns || [];
+      let next = rows.map((r) => {
+        const nr = { ...r };
+        cols.forEach((col) => {
+          if (!(nr[col.key] || "").trim() && col.sample) nr[col.key] = col.sample;
+        });
+        return nr;
+      });
+      if (p.sampleRow && next.length <= seedCount) next = [...next, { ...p.sampleRow }];
+      setRows(next);
+    }
+
     setValues(v);
     setChecks(c);
-    if (p.kind === "grid" && p.sampleRow && rows.length <= seedCount) {
-      setRows([...rows, { ...p.sampleRow }]);
-    }
-    if (p.kind === "upload" && p.fileName) v.__file = p.fileName;
-    setValues(v);
     setError("");
   };
 
   const addRow = () => {
     const empty: Record<string, string> = {};
     (p.columns || []).forEach((c) => (empty[c.key] = ""));
-    setRows([...rows, p.sampleRow ? { ...empty } : empty]);
+    setRows([...rows, empty]);
   };
   const removeRow = (idx: number) => setRows(rows.filter((_, i) => i !== idx));
   const setCell = (idx: number, key: string, val: string) =>
@@ -192,10 +202,17 @@ const NeisPracticeScreen: React.FC<PracticeFormProps & { practice: PracticeScree
     if (p.kind === "grid") {
       const cols = p.columns || [];
       const complete = rows.filter((r) => cols.every((c) => (r[c.key] || "").trim()));
-      const added = rows.length - seedCount;
-      if (added < 1) return "[행추가]로 한 줄 이상 직접 입력해 보세요.";
-      if (complete.length < Math.max(p.minRows ?? 1, seedCount + 1))
-        return "추가한 행의 모든 칸을 채워 주세요.";
+      if (p.sampleRow) {
+        // 목록형: 사용자가 새 행을 추가해 채워야 하는 화면
+        if (rows.length - seedCount < 1)
+          return "[행추가]로 한 줄 이상 직접 입력해 보세요.";
+        if (complete.length < Math.max(p.minRows ?? seedCount + 1, seedCount + 1))
+          return "추가한 행의 모든 칸을 채워 주세요.";
+      } else {
+        // 명부형: 이미 있는 줄(학생 등)을 채우는 화면
+        const need = p.minRows ?? Math.max(seedCount, 1);
+        if (complete.length < need) return "표의 모든 칸을 채워 주세요.";
+      }
     }
     if (p.kind === "approve" && !checks.line)
       return "결재선을 확인한 뒤 상신할 수 있습니다.";
@@ -317,10 +334,10 @@ const NeisPracticeScreen: React.FC<PracticeFormProps & { practice: PracticeScree
         )}
 
         <div className="p-3 space-y-2.5">
-          {/* 툴바 */}
-          {p.toolbar && p.toolbar.length > 0 && (
+          {/* 툴바 + 예시값 채우기 */}
+          {(p.toolbar?.length || p.kind !== "batch") && (
             <div className="flex flex-wrap items-center gap-1.5">
-              {p.toolbar.map((b) => (
+              {(p.toolbar || []).map((b) => (
                 <button
                   key={b}
                   onClick={() => setTip(tip === b ? null : b)}
@@ -333,12 +350,14 @@ const NeisPracticeScreen: React.FC<PracticeFormProps & { practice: PracticeScree
                   {b}
                 </button>
               ))}
-              <button
-                onClick={fillExample}
-                className="ml-auto inline-flex items-center gap-1 px-2 py-1 rounded border border-indigo-300 bg-indigo-50 text-indigo-700 text-[10px] font-bold hover:bg-indigo-100"
-              >
-                <Wand2 className="w-3 h-3" /> 예시값 채우기
-              </button>
+              {p.kind !== "batch" && (
+                <button
+                  onClick={fillExample}
+                  className="ml-auto inline-flex items-center gap-1 px-2 py-1 rounded border border-indigo-300 bg-indigo-50 text-indigo-700 text-[10px] font-bold hover:bg-indigo-100"
+                >
+                  <Wand2 className="w-3 h-3" /> 예시값 채우기
+                </button>
+              )}
             </div>
           )}
           {tip && (
@@ -349,16 +368,6 @@ const NeisPracticeScreen: React.FC<PracticeFormProps & { practice: PracticeScree
               </span>
               <button onClick={() => setTip(null)} className="ml-auto text-slate-400">
                 <X className="w-3 h-3" />
-              </button>
-            </div>
-          )}
-          {!p.toolbar && (
-            <div className="flex">
-              <button
-                onClick={fillExample}
-                className="ml-auto inline-flex items-center gap-1 px-2 py-1 rounded border border-indigo-300 bg-indigo-50 text-indigo-700 text-[10px] font-bold hover:bg-indigo-100"
-              >
-                <Wand2 className="w-3 h-3" /> 예시값 채우기
               </button>
             </div>
           )}
@@ -557,6 +566,26 @@ const NeisPracticeScreen: React.FC<PracticeFormProps & { practice: PracticeScree
                   </label>
                 ))}
               </div>
+              {p.thenApprove && p.approvalLine && p.approvalLine.length > 0 && (
+                <div className="rounded border border-slate-300 bg-white p-2.5">
+                  <div className="text-[11px] font-bold text-slate-600 mb-1.5">
+                    마감 후 상신할 결재선
+                  </div>
+                  <div className="flex items-center gap-1.5 overflow-x-auto">
+                    {p.approvalLine.map((m, i) => (
+                      <React.Fragment key={i}>
+                        <div className="px-2 py-1 border border-slate-300 rounded text-center shrink-0 min-w-[72px]">
+                          <div className="text-[9px] text-slate-500">{m.role}</div>
+                          <div className="font-bold text-slate-800 text-[11px]">{m.name}</div>
+                        </div>
+                        {i < p.approvalLine!.length - 1 && (
+                          <ChevronRight className="w-3 h-3 text-slate-300 shrink-0" />
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+              )}
               <p className="text-[10px] text-rose-500">
                 마감하면 해당 자료는 잠기며, 수정하려면 관리자에게 마감취소를 요청해야 합니다.
               </p>
