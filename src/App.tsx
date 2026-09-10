@@ -590,6 +590,10 @@ export function App() {
                 }
                 onNextStep={handleNextTutorialStep}
                 onAskAi={askAiAboutCurrentStep}
+                onAskAbout={(q) => {
+                  setIsChatOpen(true);
+                  handleSendMessage(q);
+                }}
               />
             ) : (
             <>
