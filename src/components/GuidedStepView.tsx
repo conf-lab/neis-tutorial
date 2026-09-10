@@ -74,6 +74,13 @@ export const GuidedStepView: React.FC<GuidedStepViewProps> = ({
   const primaryButton =
     [...buttonTokens].reverse().find((t) => isActionButton(t.label))?.label ??
     buttonTokens[buttonTokens.length - 1]?.label;
+  const deepestMenu = [...menuPath].reverse().find(Boolean);
+  const primaryMenu =
+    menuTokens.find((t) => t.label === deepestMenu)?.label ??
+    menuTokens[menuTokens.length - 1]?.label;
+  // 버튼도 실습폼도 없는 '이동만 하는' 단계
+  const navOnly = buttonTokens.length === 0 && step?.actionRequired !== "SAVE" &&
+    step?.actionRequired !== "FILL_FORM" && step?.actionRequired !== "APPROVE";
 
   const [openTip, setOpenTip] = useState<string | null>(null);
   const [practiceSaved, setPracticeSaved] = useState(false);
@@ -90,7 +97,9 @@ export const GuidedStepView: React.FC<GuidedStepViewProps> = ({
 
   const renderTip = (token: Token) => {
     if (openTip !== token.label) return null;
-    const isPrimary = token.kind === "button" && token.label === primaryButton;
+    const isPrimary =
+      (token.kind === "button" && token.label === primaryButton) ||
+      (token.kind === "menu" && token.label === primaryMenu);
     const explanation =
       token.kind === "menu" ? explainNeisMenu(token.label) : explainNeisButton(token.label);
     return (
@@ -112,7 +121,11 @@ export const GuidedStepView: React.FC<GuidedStepViewProps> = ({
               className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold transition-colors"
             >
               <Play className="w-3 h-3" />
-              {isLast ? "눌러서 실행 · 주제 완료" : "눌러서 실행 · 다음 단계로"}
+              {token.kind === "menu"
+                ? "이 메뉴 열기 · 다음 단계로"
+                : isLast
+                ? "눌러서 실행 · 주제 완료"
+                : "눌러서 실행 · 다음 단계로"}
             </button>
           )}
           <button
@@ -213,24 +226,39 @@ export const GuidedStepView: React.FC<GuidedStepViewProps> = ({
           </p>
           {step?.hint && <p className="text-xs text-slate-500 pl-6">💡 {step.hint}</p>}
 
+          {navOnly && (
+            <p className="pl-6 text-xs text-slate-500">
+              👉 이 단계는 <b>화면 이동</b>만 하면 됩니다. 아래 메뉴를 눌러 설명을 보고 다음 단계로 진행하세요.
+              {!showPractice && " (입력할 내용은 다음 단계에서 나옵니다.)"}
+            </p>
+          )}
+
           {/* 이동할 메뉴 */}
           {menuTokens.length > 0 && (
             <div className="pl-6">
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className="text-[11px] text-slate-400">이동할 메뉴:</span>
-                {menuTokens.map((t) => (
-                  <button
-                    key={t.label}
-                    onClick={() => setOpenTip(openTip === t.label ? null : t.label)}
-                    className={`px-2.5 py-1 rounded border text-[11px] font-medium transition-colors ${
-                      openTip === t.label
-                        ? "border-blue-400 bg-blue-100 text-blue-800"
-                        : "border-slate-300 bg-white text-slate-600 hover:border-blue-300 hover:text-blue-700"
-                    }`}
-                  >
-                    {t.label}
-                  </button>
-                ))}
+                {menuTokens.map((t) => {
+                  const isPrimary = t.label === primaryMenu;
+                  return (
+                    <button
+                      key={t.label}
+                      onClick={() => setOpenTip(openTip === t.label ? null : t.label)}
+                      className={`px-2.5 py-1 rounded border text-[11px] font-medium transition-colors ${
+                        openTip === t.label
+                          ? "border-blue-500 bg-blue-600 text-white"
+                          : isPrimary
+                          ? "border-blue-400 bg-blue-50 text-blue-700 hover:bg-blue-100 ring-1 ring-blue-300"
+                          : "border-slate-300 bg-white text-slate-600 hover:border-blue-300 hover:text-blue-700"
+                      }`}
+                    >
+                      {t.label}
+                      {isPrimary && openTip !== t.label && (
+                        <span className="ml-1 text-[9px] font-bold text-blue-500">← 여기로 이동</span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
               {menuTokens.map((t) => (
                 <React.Fragment key={t.label}>{renderTip(t)}</React.Fragment>
