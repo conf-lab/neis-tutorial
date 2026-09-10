@@ -158,6 +158,34 @@ export interface AuditCheckItem {
   manualPage: number;
 }
 
+// 학습 여정(커리큘럼): 나이스 담당자가 한 학년도에 처리하는 업무를 순서대로 배치
+export interface CurriculumLesson {
+  id: string;
+  order: number;
+  title: string;
+  summary: string; // 이 주제에서 무엇을 배우는지 한 줄 요약
+  outcome: string; // 튜토리얼을 마치면 무엇이 완료되는지
+  manualPage: number;
+  domainId: MainMenuId;
+  subMenuId: string;
+  scenarioId?: string; // 완전 인터랙티브 시나리오가 있으면 연결
+  steps?: TutorialStep[]; // 없으면 이 단계 안내를 그대로 사용
+  cautions?: string[]; // "꼭 확인하세요" 주의점
+  auditFlag?: boolean; // 감사 주요 지적사항 여부
+}
+
+export interface CurriculumPhase {
+  id: string;
+  order: number;
+  title: string;
+  period: string;
+  description: string;
+  accent: "blue" | "emerald" | "amber" | "violet" | "rose";
+  lessons: CurriculumLesson[];
+}
+
+export type CurriculumProgress = Record<string, "done" | "skipped">;
+
 export interface ChatMessage {
   id: string;
   sender: "user" | "assistant" | "bot" | "system";

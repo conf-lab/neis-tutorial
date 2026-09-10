@@ -18,6 +18,13 @@ import {
   INITIAL_APPROVAL_DOCS 
 } from "./data/manualData";
 
+import { CurriculumProgress } from "./types";
+import {
+  findLessonEntry,
+  nextLessonId,
+  lessonToScenario,
+} from "./data/curriculum";
+
 import { HeaderNav } from "./components/HeaderNav";
 import { SidebarMenu } from "./components/SidebarMenu";
 import { StepBoxBar } from "./components/StepBoxBar";
@@ -29,11 +36,32 @@ import { ApprovalBoxModal } from "./components/ApprovalBoxModal";
 import { ApiKeyModal } from "./components/ApiKeyModal";
 import { TutorialGuideModal } from "./components/TutorialGuideModal";
 import { DisclaimerModal } from "./components/DisclaimerModal";
+import { CurriculumHome } from "./components/CurriculumHome";
+import { GuidedStepView } from "./components/GuidedStepView";
+import { LessonCompleteModal } from "./components/LessonCompleteModal";
 
 const API_KEY_STORAGE = "neis_gemini_api_key";
 const API_KEY_DISMISSED_STORAGE = "neis_api_key_modal_dismissed";
 const GUIDE_SNOOZE_UNTIL_STORAGE = "neis_guide_modal_snooze_until";
 const GUIDE_SNOOZE_DAYS = 7;
+const CURRICULUM_PROGRESS_STORAGE = "neis_curriculum_progress_v1";
+
+function loadCurriculumProgress(): CurriculumProgress {
+  try {
+    const raw = localStorage.getItem(CURRICULUM_PROGRESS_STORAGE);
+    return raw ? (JSON.parse(raw) as CurriculumProgress) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveCurriculumProgress(p: CurriculumProgress) {
+  try {
+    localStorage.setItem(CURRICULUM_PROGRESS_STORAGE, JSON.stringify(p));
+  } catch {
+    /* 저장 불가 환경 무시 */
+  }
+}
 
 // Views
 import { TransferInView } from "./components/views/TransferInView";
@@ -80,9 +108,70 @@ export function App() {
   const [isChatLoading, setIsChatLoading] = useState(false);
 
   // Tutorial Mode State
-  const [isTutorialActive, setIsTutorialActive] = useState<boolean>(true);
+  const [isTutorialActive, setIsTutorialActive] = useState<boolean>(false);
   const [currentScenario, setCurrentScenario] = useState<TutorialScenario>(TUTORIAL_SCENARIOS[0]);
   const [tutorialStepIndex, setTutorialStepIndex] = useState<number>(0);
+
+  // 학습 여정(커리큘럼) State
+  const [viewMode, setViewMode] = useState<"journey" | "workspace">("journey");
+  const [curriculumProgress, setCurriculumProgress] = useState<CurriculumProgress>(
+    () => loadCurriculumProgress()
+  );
+  const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
+  const [completedLessonId, setCompletedLessonId] = useState<string | null>(null);
+
+  const activeLessonEntry = activeLessonId ? findLessonEntry(activeLessonId) : undefined;
+
+  const updateProgress = (lessonId: string, value: "done" | "skipped") => {
+    setCurriculumProgress((prev) => {
+      const next = { ...prev, [lessonId]: value };
+      saveCurriculumProgress(next);
+      return next;
+    });
+  };
+
+  const goToJourney = () => {
+    setIsTutorialActive(false);
+    setActiveLessonId(null);
+    setCompletedLessonId(null);
+    setViewMode("journey");
+  };
+
+  const handleStartLesson = (lessonId: string) => {
+    const entry = findLessonEntry(lessonId);
+    if (!entry) return;
+    const scenario = lessonToScenario(entry.lesson, entry.phase);
+    setActiveLessonId(lessonId);
+    setCompletedLessonId(null);
+    setViewMode("workspace");
+    setIsChatOpen(true);
+    handleStartTutorialScenario(scenario);
+  };
+
+  const handleSkipLesson = (lessonId: string) => updateProgress(lessonId, "skipped");
+
+  const handleResetProgress = () => {
+    setCurriculumProgress({});
+    saveCurriculumProgress({});
+  };
+
+  const handleLessonModalNext = () => {
+    const current = completedLessonId;
+    setCompletedLessonId(null);
+    if (!current) return;
+    const nid = nextLessonId(current);
+    if (nid) handleStartLesson(nid);
+    else goToJourney();
+  };
+
+  const askAiAboutCurrentStep = () => {
+    const step = currentScenario?.steps[tutorialStepIndex];
+    if (!step) return;
+    setIsChatOpen(true);
+    handleSendMessage(
+      `'${currentScenario.title}'의 '${step.title}' 단계(${step.instruction})를 수행하는 세부 절차와 매뉴얼 주의사항을 자세히 알려줘.`
+    );
+  };
 
   // Gemini API Key (bring-your-own-key, stored only in this browser)
   const [geminiApiKey, setGeminiApiKey] = useState<string>(
@@ -107,23 +196,12 @@ export function App() {
     }
   };
 
-  const openTutorialMode = () => {
-    setIsTutorialActive(true);
+  // Show the usage guide (or API key prompt) once on first visit
+  React.useEffect(() => {
     if (!isGuideSnoozed()) {
       setIsGuideModalOpen(true);
     } else {
       maybeShowApiKeyModal();
-    }
-  };
-
-  // Show the usage guide (or API key prompt) the first time the tutorial mode appears
-  React.useEffect(() => {
-    if (isTutorialActive) {
-      if (!isGuideSnoozed()) {
-        setIsGuideModalOpen(true);
-      } else {
-        maybeShowApiKeyModal();
-      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -240,10 +318,23 @@ export function App() {
         {
           id: `m-${Date.now()}`,
           sender: "bot",
-          text: `🎉 축하합니다! '${currentScenario.title}' 튜토리얼의 모든 단계를 성공적으로 완수하셨습니다.\n\n2026 나이스 매뉴얼 기준 적법 처리가 완결되었습니다. 다른 시나리오도 실습해보세요!`,
+          text: `🎉 축하합니다! '${currentScenario.title}' 튜토리얼의 모든 단계를 성공적으로 완수하셨습니다.\n\n2026 나이스 매뉴얼 기준 적법 처리가 완결되었습니다.`,
           timestamp: new Date().toISOString()
         }
       ]);
+      if (activeLessonId) {
+        updateProgress(activeLessonId, "done");
+        setCompletedLessonId(activeLessonId);
+      }
+    }
+  };
+
+  // 튜토리얼 종료 버튼: 커리큘럼 학습 중이면 여정으로, 아니면 그냥 종료
+  const handleExitTutorial = () => {
+    if (activeLessonId) {
+      goToJourney();
+    } else {
+      setIsTutorialActive(false);
     }
   };
 
@@ -401,9 +492,14 @@ export function App() {
       {/* Top Header Navigation */}
       <HeaderNav
         currentMainMenu={currentMainMenu}
-        onSelectMainMenu={handleSelectMainMenu}
+        onSelectMainMenu={(menuId) => {
+          setViewMode("workspace");
+          handleSelectMainMenu(menuId);
+        }}
         activeTutorial={isTutorialActive ? currentScenario : null}
-        onOpenTutorialList={openTutorialMode}
+        onOpenTutorialList={goToJourney}
+        onGoJourney={goToJourney}
+        journeyActive={viewMode === "journey"}
         onOpenAuditTips={() => setIsAuditModalOpen(true)}
         onOpenApprovalList={() => setIsApprovalModalOpen(true)}
         approvalCount={approvalDocs.filter((d) => d.status === "결재중" || d.status === "결재대기").length}
@@ -414,24 +510,29 @@ export function App() {
       />
 
       {/* Interactive Tutorial Banner (if active) */}
-      {isTutorialActive && currentScenario && (
+      {viewMode === "workspace" && isTutorialActive && currentScenario && (
         <TutorialModeBanner
           scenario={currentScenario}
           currentStepIndex={tutorialStepIndex}
           onNextStep={handleNextTutorialStep}
           onPrevStep={handlePrevTutorialStep}
           onReset={() => setTutorialStepIndex(0)}
-          onExit={() => setIsTutorialActive(false)}
-          onOpenChatWithStep={() => {
-            setIsChatOpen(true);
-            handleSendMessage(
-              `'${currentScenario.title}'의 '${currentStep?.title}' 단계(${currentStep?.instruction})를 수행하는 세부 절차와 매뉴얼 주의사항을 자세히 알려줘.`
-            );
-          }}
+          onExit={handleExitTutorial}
+          onOpenChatWithStep={askAiAboutCurrentStep}
+        />
+      )}
+
+      {viewMode === "journey" && (
+        <CurriculumHome
+          progress={curriculumProgress}
+          onStartLesson={handleStartLesson}
+          onSkipLesson={handleSkipLesson}
+          onResetProgress={handleResetProgress}
         />
       )}
 
       {/* Main Workspace Layout */}
+      {viewMode === "workspace" && (
       <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar Menu */}
         <SidebarMenu
@@ -474,6 +575,24 @@ export function App() {
 
           {/* View Container */}
           <div className="flex-1 overflow-y-auto bg-slate-50/50">
+            {isTutorialActive && activeLessonEntry && !activeLessonEntry.lesson.scenarioId ? (
+              <GuidedStepView
+                scenario={currentScenario}
+                stepIndex={tutorialStepIndex}
+                lesson={activeLessonEntry.lesson}
+                menuPath={
+                  [
+                    "나이스",
+                    MENU_STRUCTURE[currentMainMenu]?.title || "교무학사",
+                    currentSubMenu?.category || "",
+                    currentSubMenu?.name || "",
+                  ].filter(Boolean) as string[]
+                }
+                onNextStep={handleNextTutorialStep}
+                onAskAi={askAiAboutCurrentStep}
+              />
+            ) : (
+            <>
             {/* 1. 전입관리 */}
             {currentSubMenu.id === "transfer_in" && (
               <TransferInView
@@ -645,9 +764,12 @@ export function App() {
                 students={students}
               />
             )}
+            </>
+            )}
           </div>
         </main>
       </div>
+      )}
 
       {/* AI Tutor Chatbot Drawer / Floating Window */}
       <ChatWindow
@@ -703,6 +825,27 @@ export function App() {
       <DisclaimerModal
         isOpen={isDisclaimerModalOpen}
         onClose={() => setIsDisclaimerModalOpen(false)}
+      />
+
+      {/* 학습 여정 주제 완료 안내 */}
+      <LessonCompleteModal
+        isOpen={!!completedLessonId}
+        lessonTitle={completedLessonId ? findLessonEntry(completedLessonId)?.lesson.title || "" : ""}
+        outcome={completedLessonId ? findLessonEntry(completedLessonId)?.lesson.outcome : undefined}
+        nextLessonTitle={
+          completedLessonId
+            ? (() => {
+                const nid = nextLessonId(completedLessonId);
+                return nid ? findLessonEntry(nid)?.lesson.title : undefined;
+              })()
+            : undefined
+        }
+        onNext={handleLessonModalNext}
+        onBackToJourney={goToJourney}
+        onClose={() => {
+          setCompletedLessonId(null);
+          setIsTutorialActive(false);
+        }}
       />
     </div>
   );

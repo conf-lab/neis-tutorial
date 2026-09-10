@@ -1,13 +1,10 @@
 import React from "react";
 import {
   Building2,
-  HelpCircle,
-  BookMarked,
+  Map,
   PlayCircle,
   Sparkles,
-  CheckCircle2,
   FileCheck2,
-  Calendar,
   AlertTriangle,
   KeyRound
 } from "lucide-react";
@@ -19,6 +16,8 @@ interface HeaderNavProps {
   onSelectMainMenu: (menuId: MainMenuId) => void;
   activeTutorial: any | null;
   onOpenTutorialList: () => void;
+  onGoJourney: () => void;
+  journeyActive: boolean;
   onOpenAuditTips: () => void;
   onOpenApprovalList: () => void;
   approvalCount: number;
@@ -33,6 +32,8 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   onSelectMainMenu,
   activeTutorial,
   onOpenTutorialList,
+  onGoJourney,
+  journeyActive,
   onOpenAuditTips,
   onOpenApprovalList,
   approvalCount,
@@ -91,8 +92,8 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
             onClick={onOpenTutorialList}
             className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-blue-700 hover:bg-blue-600 text-white font-medium transition-colors shadow-sm"
           >
-            <PlayCircle className="w-3.5 h-3.5 text-white" />
-            <span>12대 업무 튜토리얼</span>
+            <Map className="w-3.5 h-3.5 text-white" />
+            <span>학습 여정</span>
           </button>
 
           <button
@@ -127,9 +128,21 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
 
       {/* Main GNB Menus */}
       <div className="flex items-center overflow-x-auto scrollbar-none px-2 bg-slate-900">
+        <button
+          onClick={onGoJourney}
+          className={`px-4 py-2.5 text-xs font-bold whitespace-nowrap border-b-2 transition-all flex items-center gap-1.5 ${
+            journeyActive
+              ? "border-amber-400 text-white bg-slate-800/80 shadow-inner"
+              : "border-transparent text-amber-300/90 hover:text-amber-200 hover:bg-slate-800/40"
+          }`}
+        >
+          <Map className="w-3.5 h-3.5" />
+          <span>학습 여정</span>
+        </button>
+        <span className="text-slate-700 px-1">|</span>
         {(Object.keys(MENU_STRUCTURE) as MainMenuId[]).map((menuKey) => {
           const menu = MENU_STRUCTURE[menuKey];
-          const isActive = currentMainMenu === menuKey;
+          const isActive = !journeyActive && currentMainMenu === menuKey;
 
           return (
             <button
