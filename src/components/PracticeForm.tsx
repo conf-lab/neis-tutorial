@@ -586,9 +586,11 @@ const NeisPracticeScreen: React.FC<PracticeFormProps & { practice: PracticeScree
                   </div>
                 </div>
               )}
-              <p className="text-[10px] text-rose-500">
-                마감하면 해당 자료는 잠기며, 수정하려면 관리자에게 마감취소를 요청해야 합니다.
-              </p>
+              {primaryLabel(p).includes("마감") && (
+                <p className="text-[10px] text-rose-500">
+                  마감하면 해당 자료는 잠기며, 수정하려면 관리자에게 마감취소를 요청해야 합니다.
+                </p>
+              )}
             </div>
           )}
 
@@ -640,7 +642,7 @@ const NeisPracticeScreen: React.FC<PracticeFormProps & { practice: PracticeScree
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-white text-[11px] font-bold transition-colors ${
               p.kind === "approve"
                 ? "bg-emerald-600 hover:bg-emerald-500"
-                : p.kind === "close"
+                : p.kind === "close" && primaryLabel(p).includes("마감")
                 ? "bg-rose-600 hover:bg-rose-500"
                 : "bg-blue-600 hover:bg-blue-500"
             }`}
