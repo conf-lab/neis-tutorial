@@ -136,6 +136,80 @@ export interface TutorialStep {
   actionRequired?: "NAVIGATE" | "CLICK_BUTTON" | "FILL_FORM" | "SAVE" | "APPROVE";
   actionTargetId?: string;
   completedText?: string;
+  /** 가이드 학습(GuidedStepView)에서 이 단계에 띄울 나이스형 실습 화면 */
+  practice?: PracticeScreen;
+}
+
+// ── 가이드 학습 단계의 '실습 화면' 명세 ──────────────────────────────
+// 전용 시뮬레이터가 없는 주제도, 실제 나이스와 비슷한 미니 입력 화면에서
+// 값을 넣어 보고 [저장]하면 "나이스에서 무엇이 바뀌는지"를 보여준다.
+
+export type PracticeFieldType =
+  | "text"
+  | "number"
+  | "textarea"
+  | "select"
+  | "date"
+  | "checkbox";
+
+export interface PracticeField {
+  key: string;
+  label: string;
+  type?: PracticeFieldType; // 기본 "text"
+  sample?: string; // 예시값 (한 번에 채우기 버튼으로 입력됨)
+  options?: string[]; // select 선택지
+  suffix?: string; // 입력칸 뒤 단위 (시간, 일 …)
+  full?: boolean; // 한 줄 전체 너비
+  optional?: boolean; // 저장 시 필수 아님
+}
+
+export interface PracticeColumn {
+  key: string;
+  label: string;
+  type?: "text" | "number" | "select" | "date";
+  options?: string[];
+  sample?: string;
+}
+
+export interface PracticeScreen {
+  kind: "form" | "grid" | "approve" | "close" | "batch" | "upload";
+  title?: string; // 화면 제목 (없으면 서브메뉴 이름)
+  stepBoxes?: string[]; // 상단 업무단계 탭 (없으면 서브메뉴 stepBoxes)
+  activeStepBox?: string;
+  intro?: string; // 파란 운영 안내 박스 문구
+  toolbar?: string[]; // 회색 툴바 버튼 라벨 (누르면 설명)
+  primaryAction?: string; // 주 버튼 라벨 (기본: kind별)
+
+  // kind: "form"
+  fields?: PracticeField[];
+
+  // kind: "grid"
+  columns?: PracticeColumn[];
+  seedRows?: Record<string, string>[]; // 이미 들어있는 행
+  sampleRow?: Record<string, string>; // [행추가] 시 채워지는 예시 행
+  minRows?: number; // 저장에 필요한 최소 입력 행 수 (기본 1)
+
+  // kind: "approve"
+  approvalLine?: { role: string; name: string }[];
+  docTitle?: string;
+
+  // kind: "close"
+  closeChecklist?: string[];
+  closeUnit?: string; // "우리 반" 등
+  thenApprove?: boolean; // 마감 후 승인요청까지
+
+  // kind: "batch"
+  batchAction?: string; // 실행 버튼 라벨 ("개근 일괄입력" 등)
+  batchPreview?: string[]; // 실행 시 처리될 항목 미리보기
+  batchNote?: string;
+
+  // kind: "upload"
+  fileKind?: string; // "엑셀(.xlsx)"
+  fileName?: string; // 선택된 것처럼 보여줄 파일명
+
+  // 저장/실행 후 결과 — 나이스에서 실제로 무엇이 바뀌는지
+  result: string[];
+  resultBadge?: string; // "저장됨" · "결재중" · "마감" 등
 }
 
 export interface TutorialScenario {
@@ -157,6 +231,34 @@ export interface AuditCheckItem {
   solution: string;
   manualPage: number;
 }
+
+// 학습 여정(커리큘럼): 나이스 담당자가 한 학년도에 처리하는 업무를 순서대로 배치
+export interface CurriculumLesson {
+  id: string;
+  order: number;
+  title: string;
+  summary: string; // 이 주제에서 무엇을 배우는지 한 줄 요약
+  outcome: string; // 튜토리얼을 마치면 무엇이 완료되는지
+  manualPage: number;
+  domainId: MainMenuId;
+  subMenuId: string;
+  scenarioId?: string; // 완전 인터랙티브 시나리오가 있으면 연결
+  steps?: TutorialStep[]; // 없으면 이 단계 안내를 그대로 사용
+  cautions?: string[]; // "꼭 확인하세요" 주의점
+  auditFlag?: boolean; // 감사 주요 지적사항 여부
+}
+
+export interface CurriculumPhase {
+  id: string;
+  order: number;
+  title: string;
+  period: string;
+  description: string;
+  accent: "blue" | "emerald" | "amber" | "violet" | "rose";
+  lessons: CurriculumLesson[];
+}
+
+export type CurriculumProgress = Record<string, "done" | "skipped">;
 
 export interface ChatMessage {
   id: string;

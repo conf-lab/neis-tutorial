@@ -51,8 +51,8 @@ export const TutorialGuideModal: React.FC<TutorialGuideModalProps> = ({
               <span>저장되는 것 / 안 되는 것</span>
             </div>
             <ul className="list-disc list-inside text-xs text-slate-600 space-y-1 pl-1">
-              <li><b>API 키</b>는 이 브라우저에만 저장되어 새로고침해도 유지됩니다. (단, 다른 브라우저·시크릿모드로 열거나 인터넷 사용기록을 삭제하면 사라집니다)</li>
-              <li><b>학생명단, 결재함, 튜토리얼 진행상황</b>은 저장되지 않아 새로고침하면 처음 상태로 초기화됩니다.</li>
+              <li><b>API 키, 학습 여정 진행률, 실습 입력 내용(학생명단·결재함·직접 입력한 값)</b>은 모두 이 브라우저에 저장되어 <b>새로고침해도 유지</b>됩니다.</li>
+              <li>화면 상단의 <b>[실습 초기화]</b> 버튼을 누르거나, 다른 브라우저·시크릿모드로 열거나, 인터넷 사용기록(사이트 데이터)을 삭제하면 처음 상태로 돌아갑니다.</li>
             </ul>
           </div>
         </div>

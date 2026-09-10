@@ -24,9 +24,13 @@ export const ApprovalBoxModal: React.FC<ApprovalBoxModalProps> = ({
   documents,
   onApproveDocument,
 }) => {
-  const [selectedDoc, setSelectedDoc] = useState<ApprovalDocument | null>(documents[0] || null);
+  const [selectedId, setSelectedId] = useState<string | null>(documents[0]?.id || null);
 
   if (!isOpen) return null;
+
+  // documents가 갱신되면(결재 승인 등) 항상 최신 문서를 보여준다
+  const selectedDoc =
+    documents.find((d) => d.id === selectedId) || documents[0] || null;
 
   return (
     <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
@@ -58,7 +62,7 @@ export const ApprovalBoxModal: React.FC<ApprovalBoxModalProps> = ({
             {documents.map((doc) => (
               <button
                 key={doc.id}
-                onClick={() => setSelectedDoc(doc)}
+                onClick={() => setSelectedId(doc.id)}
                 className={`w-full text-left p-2.5 rounded-lg border transition-all ${
                   selectedDoc?.id === doc.id
                     ? "bg-blue-50/80 border-blue-400 shadow-xs"
