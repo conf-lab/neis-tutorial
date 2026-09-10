@@ -24,6 +24,7 @@ import {
   nextLessonId,
   lessonToScenario,
 } from "./data/curriculum";
+import { loadJSON, saveJSON, removeKeys, STORAGE_KEYS } from "./utils/persist";
 
 import { HeaderNav } from "./components/HeaderNav";
 import { SidebarMenu } from "./components/SidebarMenu";
@@ -87,10 +88,32 @@ export function App() {
     currentSubMenu.stepBoxes?.[0] || ""
   );
 
-  // Entities State
-  const [students, setStudents] = useState<Student[]>(INITIAL_STUDENTS);
-  const [teachers, setTeachers] = useState<Teacher[]>(INITIAL_TEACHERS);
-  const [approvalDocs, setApprovalDocs] = useState<ApprovalDocument[]>(INITIAL_APPROVAL_DOCS);
+  // Entities State — 실습 입력 결과가 새로고침에도 유지되도록 이 브라우저에 저장
+  const [students, setStudents] = useState<Student[]>(() =>
+    loadJSON(STORAGE_KEYS.students, INITIAL_STUDENTS)
+  );
+  const [teachers, setTeachers] = useState<Teacher[]>(() =>
+    loadJSON(STORAGE_KEYS.teachers, INITIAL_TEACHERS)
+  );
+  const [approvalDocs, setApprovalDocs] = useState<ApprovalDocument[]>(() =>
+    loadJSON(STORAGE_KEYS.approvals, INITIAL_APPROVAL_DOCS)
+  );
+
+  React.useEffect(() => saveJSON(STORAGE_KEYS.students, students), [students]);
+  React.useEffect(() => saveJSON(STORAGE_KEYS.teachers, teachers), [teachers]);
+  React.useEffect(() => saveJSON(STORAGE_KEYS.approvals, approvalDocs), [approvalDocs]);
+
+  const resetPracticeData = () => {
+    setStudents(INITIAL_STUDENTS);
+    setTeachers(INITIAL_TEACHERS);
+    setApprovalDocs(INITIAL_APPROVAL_DOCS);
+    removeKeys(
+      STORAGE_KEYS.students,
+      STORAGE_KEYS.teachers,
+      STORAGE_KEYS.approvals,
+      STORAGE_KEYS.practice
+    );
+  };
 
   // Modals & Chat State
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
@@ -556,11 +579,7 @@ export function App() {
             ]}
             manualPage={currentSubMenu?.manualPage}
             onOpenAiTutor={() => setIsChatOpen(true)}
-            onResetData={() => {
-              setStudents(INITIAL_STUDENTS);
-              setTeachers(INITIAL_TEACHERS);
-              setApprovalDocs(INITIAL_APPROVAL_DOCS);
-            }}
+            onResetData={resetPracticeData}
           />
 
           {/* 4th-Gen NEIS Rectangular StepBoxes */}

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { CurriculumLesson, TutorialScenario } from "../types";
 import { getManualPageUrl } from "../utils/manual";
 import { explainNeisButton, explainNeisMenu, isActionButton } from "../data/neisGlossary";
+import { PracticeForm } from "./PracticeForm";
 import {
   Check,
   ChevronRight,
@@ -75,8 +76,17 @@ export const GuidedStepView: React.FC<GuidedStepViewProps> = ({
     buttonTokens[buttonTokens.length - 1]?.label;
 
   const [openTip, setOpenTip] = useState<string | null>(null);
-  // 단계가 바뀌면 열린 설명 닫기
-  React.useEffect(() => setOpenTip(null), [stepIndex, scenario.id]);
+  const [practiceSaved, setPracticeSaved] = useState(false);
+  // 단계가 바뀌면 열린 설명 닫기 / 저장 표시 초기화
+  React.useEffect(() => {
+    setOpenTip(null);
+    setPracticeSaved(false);
+  }, [stepIndex, scenario.id]);
+
+  const showPractice =
+    step?.actionRequired === "SAVE" ||
+    step?.actionRequired === "FILL_FORM" ||
+    step?.actionRequired === "APPROVE";
 
   const renderTip = (token: Token) => {
     if (openTip !== token.label) return null;
@@ -261,6 +271,16 @@ export const GuidedStepView: React.FC<GuidedStepViewProps> = ({
             </div>
           )}
 
+          {showPractice && step && (
+            <PracticeForm
+              key={`${scenario.id}-${stepIndex}`}
+              scenarioId={scenario.id}
+              stepIndex={stepIndex}
+              step={step}
+              onSaved={() => setPracticeSaved(true)}
+            />
+          )}
+
           {lesson?.cautions && lesson.cautions.length > 0 && stepIndex === 0 && (
             <div className="mt-1 rounded-lg bg-rose-50 border border-rose-200 p-3 space-y-1">
               <div className="flex items-center gap-1.5 font-bold text-rose-800 text-[11px]">
@@ -279,7 +299,7 @@ export const GuidedStepView: React.FC<GuidedStepViewProps> = ({
               onClick={onNextStep}
               className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-white transition-colors ${
                 isLast ? "bg-emerald-600 hover:bg-emerald-500" : "bg-blue-600 hover:bg-blue-500"
-              }`}
+              } ${practiceSaved ? "ring-2 ring-emerald-300 animate-pulse" : ""}`}
             >
               {isLast ? (
                 <>
