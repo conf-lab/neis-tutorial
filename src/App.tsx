@@ -64,6 +64,26 @@ function saveCurriculumProgress(p: CurriculumProgress) {
   }
 }
 
+const nowStamp = () => new Date().toISOString().slice(0, 16).replace("T", " ");
+
+// 완결(status) 문서는 결재선 전원이 서명 완료 상태여야 목록 배지와 결재선이 일치한다.
+function normalizeApprovals(docs: ApprovalDocument[]): ApprovalDocument[] {
+  if (!Array.isArray(docs)) return INITIAL_APPROVAL_DOCS;
+  return docs.map((d) =>
+    d.status === "완결"
+      ? {
+          ...d,
+          approvalLine: (d.approvalLine || []).map((m) => ({
+            ...m,
+            signed: true,
+            status: "완료" as const,
+            date: m.date || nowStamp(),
+          })),
+        }
+      : d
+  );
+}
+
 // Views
 import { TransferInView } from "./components/views/TransferInView";
 import { EvalPlanView } from "./components/views/EvalPlanView";
@@ -96,7 +116,7 @@ export function App() {
     loadJSON(STORAGE_KEYS.teachers, INITIAL_TEACHERS)
   );
   const [approvalDocs, setApprovalDocs] = useState<ApprovalDocument[]>(() =>
-    loadJSON(STORAGE_KEYS.approvals, INITIAL_APPROVAL_DOCS)
+    normalizeApprovals(loadJSON(STORAGE_KEYS.approvals, INITIAL_APPROVAL_DOCS))
   );
 
   React.useEffect(() => saveJSON(STORAGE_KEYS.students, students), [students]);
@@ -494,7 +514,20 @@ export function App() {
 
   const handleApproveDocument = (docId: string) => {
     setApprovalDocs((prev) =>
-      prev.map((d) => (d.id === docId ? { ...d, status: "완결" } : d))
+      prev.map((d) =>
+        d.id === docId
+          ? {
+              ...d,
+              status: "완결",
+              approvalLine: d.approvalLine.map((m) => ({
+                ...m,
+                signed: true,
+                status: "완료" as const,
+                date: m.date || nowStamp(),
+              })),
+            }
+          : d
+      )
     );
   };
 
